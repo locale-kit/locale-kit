@@ -13,14 +13,14 @@ For support, feel free to open an issue!
 
 Install locale-kit by adding the import and initializing the class with your translation/language config.
 ```ts
-import { LocaleKit } from "https://deno.land/x/locale-kit/mod.ts";
+import { LocaleKit } from "https://deno.land/x/localekit/mod.ts";
 ```
 
 ## Usage/Examples
 
 #### Example `main.ts` file
 ```ts
-import { LocaleKit } from "https://deno.land/x/locale-kit/mod.ts";
+import { LocaleKit } from "https://deno.land/x/localekit/mod.ts";
 import locale_config from "./locale.config.ts";
 
 const locale = new LocaleKit({
@@ -111,7 +111,7 @@ Here's an example properly showing how this would be used in the real-world:
 // --------------------------- //
 
 // /mod.ts
-import { LocaleKit } from "https://deno.land/x/locale-kit/mod.ts";
+import { LocaleKit } from "https://deno.land/x/localekit/mod.ts";
 import locale_config from "./locale.config.ts";
 
 const locale = new LocaleKit({
@@ -136,7 +136,7 @@ If a value doesn't exist for the provided key, you can provide a fallback value.
 // --------------------------- //
 
 // /mod.ts
-import { LocaleKit } from "https://deno.land/x/locale-kit/mod.ts";
+import { LocaleKit } from "https://deno.land/x/localekit/mod.ts";
 import locale_config from "./locale.config.ts";
 
 const locale = new LocaleKit({
