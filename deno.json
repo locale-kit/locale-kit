@@ -2,7 +2,9 @@
   "fmt": {
     "files": {
       "include": [],
-      "exclude": []
+      "exclude": [
+        "README.md"
+      ]
     },
     "options": {}
   },
@@ -20,9 +22,7 @@
   "test": {
     "files": {
       "include": [],
-      "exclude": [
-        "README.md"
-      ]
+      "exclude": []
     }
   },
   "compilerOptions": {}
