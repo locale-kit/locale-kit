@@ -3,6 +3,7 @@
 
 A small library to handle translations and localisations. It may be rough around the edges for now, but suits my needs (and hopefully yours) decently enough.
 
+[![NPM Build and Publish](https://github.com/locale-kit/locale-kit/actions/workflows/npm_publish.yml/badge.svg)](https://github.com/locale-kit/locale-kit/actions/workflows/npm_publish.yml)
 
 ## Support
 
