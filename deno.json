@@ -25,7 +25,9 @@
   "test": {
     "files": {
       "include": [],
-      "exclude": []
+      "exclude": [
+        "npm_build/"
+      ]
     }
   },
   "compilerOptions": {}

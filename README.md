@@ -75,7 +75,7 @@ The general formatting of a dynamic translation key follows the following:
     * invalid: test case
     * invalid: test(case)
     * invalid: test.case
-* key followed by colon, and value of test case is wrapped in backticks
+* key followed by colon, and value of test case is wrapped in backticks (or with `;:` and `:;` at the start and end if you prefer your templates/dynamic structures to be able to span multiple lines without having to escape the backtics in javascript)
 * each parameter should be separated by a lone pipe character
 * optionally, a `default` case can be passed in at the end to handle edge cases
 * optionally, you can embed a value in a format case using double squigly lines; examples:
@@ -94,11 +94,28 @@ If we put all that together and format it to our liking, we get something like t
 ]]
 ```
 The above would only look pretty outside of a JSON file though. The return characters are purely decorative outside of the case formats.
+Additionally, you can replace the backticks in the case values with `;:` and `:;` at the start and end if you prefer your templates/dynamic structures to be able to span multiple lines without having to escape the backtics in javascript. An example of this would be:
+```ts
+const str = `Lorem Ipsum [[~
+    {key}
+   test_case_1: ;:test 2:; |
+   test_case_2: ;:{{key}} {{key2}}||no key found||:; |
+   default: ;:oops, no cases matched:;
+]]`
+// ----- compared to ----- //
+const str = `Lorem Ipsum [[~
+    {key}
+   test_case_1: \`test 2\` |
+   test_case_2: \`{{key}} {{key2}}||no key found||\` |
+   default: \`oops, no cases matched\`;
+]]`
+```
+
 The regex that handles the parsing of the above can be found in `/mod.ts`.
 Here's the regex to save you the trouble though:
 ```ts
 const DYN_STR_REGEX =
-  /\[\[~\s*(?:{(?<data_key>.*?)})\s*(?<cases>(?:\s*(?<case_key>(?:(?:[\w-])|(?:N?GTE?|N?LTE?|N?EQ|AND|N?BT|N?IN|X?OR)\((?:[^)]+)\))+)\s*:\s*`[^`]*`\s*\|*\s*)+)+\]\]/gs;
+  /\[\[~\s*(?:{(?<data_key>.*?)})\s*(?<cases>(?:\s*(?<case_key>(?:(?:[\w-])|(?:N?GTE?|N?LTE?|N?EQ|AND|N?BT|N?IN|X?OR)\((?:[^)]+)\))+)\s*:\s*(?:(?:`[^`]*`)|(?:;:(?:(?!:;).)*:;))\s*\|*\s*)+)+\]\]/gs;
 ```
 
 Here's an example properly showing how this would be used in the real-world:

@@ -229,6 +229,39 @@ Deno.test(
 
 Deno.test(
   {
+    name: "Translate a conditional key with the semicolon-colon syntax",
+  },
+  () => {
+    const svc = new LocaleKit();
+
+    svc.addLanguage("en", {
+      common: {
+        message_count:
+          "You have {{count}} [[~ {count} 1: ;:message:; | default: ;:messages:; ]]",
+      },
+    });
+
+    assertEquals(
+      svc.t("common.message_count", { count: 1 }),
+      "You have 1 message",
+    );
+    assertEquals(
+      svc.t("common.message_count", { count: 2 }),
+      "You have 2 messages",
+    );
+    assertEquals(
+      svc.t("common.message_count", { count: 3 }),
+      "You have 3 messages",
+    );
+    assertEquals(
+      svc.t("common.message_count", { count: 0 }),
+      "You have 0 messages",
+    );
+  },
+);
+
+Deno.test(
+  {
     name:
       "Print [fallback_key_missing] if default not found and fallback required",
   },

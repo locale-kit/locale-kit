@@ -2,9 +2,9 @@ import { flattenObject, getNestedKeyValue } from "./util/obj.ts";
 import { FUNC_NAMES, FUNCS, getFunctionParameters } from "./util/function.ts";
 
 const DYN_STR_REGEX =
-  /\[\[~\s*(?:{(?<data_key>.*?)})\s*(?<cases>(?:\s*(?<case_key>(?:(?:[\w-])|(?:N?GTE?|N?LTE?|N?EQ|AND|N?BT|N?IN|X?OR)\((?:[^)]+)\))+)\s*:\s*`[^`]*`\s*\|*\s*)+)+\]\]/gs;
+  /\[\[~\s*(?:{(?<data_key>.*?)})\s*(?<cases>(?:\s*(?<case_key>(?:(?:[\w-])|(?:N?GTE?|N?LTE?|N?EQ|AND|N?BT|N?IN|X?OR)\((?:[^)]+)\))+)\s*:\s*(?:(?:`[^`]*`)|(?:;:(?:(?!:;).)*:;))\s*\|*\s*)+)+\]\]/gs;
 const DYN_CASEKEY_REGEX =
-  /(?<case_key>(?:(?:[\w-])|(?:N?GTE?|N?LTE?|N?EQ|AND|N?BT|N?IN|X?OR)\((?:[^)]+)\))+)\s*:\s*`(?<content>[^`]*)`/gs;
+  /(?<case_key>(?:(?:[\w-])|(?:N?GTE?|N?LTE?|N?EQ|AND|N?BT|N?IN|X?OR)\((?:[^)]+)\))+)\s*:\s*(?:(?:`(?<content_a>[^`]*)`)|(?:;:(?<content_b>(?:(?!:;).)*):;))/gs;
 
 /**
  * Function for handling
@@ -189,7 +189,7 @@ export class LocaleKit {
         for (const option of options) {
           options_map.set(
             option.groups?.case_key as string,
-            option.groups?.content as string,
+            (option.groups?.content_a || option.groups?.content_b) as string,
           );
         }
 
