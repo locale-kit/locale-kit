@@ -3,7 +3,8 @@
     "files": {
       "include": [],
       "exclude": [
-        "README.md"
+        "README.md",
+        "npm_build/"
       ]
     },
     "options": {}
@@ -11,7 +12,9 @@
   "lint": {
     "files": {
       "include": [],
-      "exclude": []
+      "exclude": [
+        "npm_build/"
+      ]
     },
     "rules": {
       "tags": [],
