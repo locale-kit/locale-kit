@@ -43,7 +43,7 @@ export default {
     common: {
       languages: {
         en: "English",
-        es: "Spanish
+        es: "Spanish"
       }
     }
   },
