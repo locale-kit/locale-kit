@@ -17,7 +17,7 @@ const DYN_FUNC_REGEX =
  */
 const DYN_NESTED_REGEX = /\{\{(.*?)\}\}(?:\|\|(.*?)\|\|)?/gs;
 
-export function format(str: string = "", opts: Record<string, unknown> = {}) {
+export function format(str = "", opts: Record<string, unknown> = {}) {
   // Find anything matching something similar to [[~ {object.nested.key} 1: `string` | 2: `{{object.second.nested.key}} string` | 3: `string` | ... | default: `string` ]]
   // and replace it with the correct string depending on the value of the object.nested.key
   const translated = str.replaceAll(
