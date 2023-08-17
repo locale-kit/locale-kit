@@ -8,6 +8,16 @@ const DYN_ARG_REGEX =
 
 type ArgType = number | string;
 
+const getLen = (a: ArgType): ArgType => {
+  if (typeof a === "string" || Array.isArray(a)) {
+    return a.length;
+  } else if (typeof a === "object") {
+    return Object.keys(a).length;
+  } else {
+    return NaN;
+  }
+};
+
 const funcGT = (a: ArgType, b: ArgType) => a > b;
 const funcGTE = (a: ArgType, b: ArgType) => a >= b;
 const funcNGT = (a: ArgType, b: ArgType) => !funcGT(a, b);
@@ -26,6 +36,27 @@ const funcIN = (a: ArgType, b: ArgType[] | string) => b.includes(a as string);
 const funcNIN = (a: ArgType, b: ArgType[] | string) => !funcIN(a, b);
 const funcOR = (a: boolean, b: boolean) => a || b;
 const funcXOR = (a: boolean, b: boolean) => funcNEQ(a, b);
+
+const funcLEN_GT = (a: ArgType, b: ArgType) => getLen(a) > b;
+const funcLEN_GTE = (a: ArgType, b: ArgType) => getLen(a) >= b;
+const funcLEN_NGT = (a: ArgType, b: ArgType) => !funcGT(getLen(a), b);
+const funcLEN_NGTE = (a: ArgType, b: ArgType) => !funcGTE(getLen(a), b);
+const funcLEN_LT = (a: ArgType, b: ArgType) => getLen(a) < b;
+const funcLEN_LTE = (a: ArgType, b: ArgType) => getLen(a) <= b;
+const funcLEN_NLT = (a: ArgType, b: ArgType) => !funcLT(getLen(a), b);
+const funcLEN_NLTE = (a: ArgType, b: ArgType) => !funcLTE(getLen(a), b);
+const funcLEN_EQ = (a: ArgType | boolean, b: ArgType | boolean) =>
+  getLen(a as ArgType) === b;
+const funcLEN_NEQ = (a: ArgType | boolean, b: ArgType | boolean) =>
+  getLen(a as ArgType) !== b;
+const funcLEN_BT = (a: ArgType, b: ArgType, c: ArgType) =>
+  funcGT(getLen(a), b) && funcLT(getLen(a), c);
+const funcLEN_NBT = (a: ArgType, b: ArgType, c: ArgType) =>
+  !funcBT(getLen(a), b, c);
+const funcLEN_IN = (a: ArgType, b: ArgType[] | string) =>
+  b.includes(getLen(a) as string);
+const funcLEN_NIN = (a: ArgType, b: ArgType[] | string) =>
+  !funcIN(getLen(a), b);
 
 /**
  * A map of functions, how many args and their types they take, and their names
@@ -63,6 +94,27 @@ export const FUNCS: FUNCSMapType = {
     arg_types: [["num", "str", "key"]],
     func: funcNGTE,
   },
+  LEN_GT: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key"]],
+    func: funcLEN_GT,
+  },
+  LEN_GTE: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key"]],
+    func: funcLEN_GTE,
+  },
+  LEN_NGT: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key"]],
+    func: funcLEN_NGT,
+  },
+  LEN_NGTE: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key"]],
+    func: funcLEN_NGTE,
+  },
+
   LT: {
     arg_count: 1,
     arg_types: [["num", "str", "key"]],
@@ -83,6 +135,27 @@ export const FUNCS: FUNCSMapType = {
     arg_types: [["num", "str", "key"]],
     func: funcNLTE,
   },
+  LEN_LT: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key"]],
+    func: funcLEN_LT,
+  },
+  LEN_LTE: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key"]],
+    func: funcLEN_LTE,
+  },
+  LEN_NLT: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key"]],
+    func: funcLEN_NLT,
+  },
+  LEN_NLTE: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key"]],
+    func: funcLEN_NLTE,
+  },
+
   EQ: {
     arg_count: 1,
     arg_types: [["num", "str", "key", "bool"]],
@@ -93,6 +166,17 @@ export const FUNCS: FUNCSMapType = {
     arg_types: [["num", "str", "key", "bool"]],
     func: funcNEQ,
   },
+  LEN_EQ: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key", "bool"]],
+    func: funcLEN_EQ,
+  },
+  LEN_NEQ: {
+    arg_count: 1,
+    arg_types: [["num", "str", "key", "bool"]],
+    func: funcLEN_NEQ,
+  },
+
   BT: {
     arg_count: 2,
     arg_types: [
@@ -109,6 +193,23 @@ export const FUNCS: FUNCSMapType = {
     ],
     func: funcNBT,
   },
+  LEN_BT: {
+    arg_count: 2,
+    arg_types: [
+      ["num", "str", "key"],
+      ["num", "str", "key"],
+    ],
+    func: funcLEN_BT,
+  },
+  LEN_NBT: {
+    arg_count: 2,
+    arg_types: [
+      ["num", "str", "key"],
+      ["num", "str", "key"],
+    ],
+    func: funcLEN_NBT,
+  },
+
   IN: {
     arg_count: 1,
     arg_types: [["key"]],
@@ -119,6 +220,17 @@ export const FUNCS: FUNCSMapType = {
     arg_types: [["key"]],
     func: funcNIN,
   },
+  LEN_IN: {
+    arg_count: 1,
+    arg_types: [["key"]],
+    func: funcLEN_IN,
+  },
+  LEN_NIN: {
+    arg_count: 1,
+    arg_types: [["key"]],
+    func: funcLEN_NIN,
+  },
+
   AND: {
     arg_count: 1,
     arg_types: [["num", "str", "key", "bool"]],

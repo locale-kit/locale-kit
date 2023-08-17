@@ -1,21 +1,10 @@
 {
   "fmt": {
-    "files": {
-      "include": [],
-      "exclude": [
-        "README.md",
-        "npm_build/"
-      ]
-    },
+    "exclude": ["README.md", "npm_build/"],
     "options": {}
   },
   "lint": {
-    "files": {
-      "include": [],
-      "exclude": [
-        "npm_build/"
-      ]
-    },
+    "exclude": ["npm_build/"],
     "rules": {
       "tags": ["recommended"],
       "include": [],
@@ -25,9 +14,7 @@
   "test": {
     "files": {
       "include": [],
-      "exclude": [
-        "npm_build/"
-      ]
+      "exclude": ["npm_build/"]
     }
   },
   "compilerOptions": {}

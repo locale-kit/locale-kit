@@ -9,7 +9,7 @@ Deno.test("Init with language", () => {
   const svc = new LocaleKit({
     languages: {
       en: {
-        "test": { "key": "Test Key" },
+        test: { key: "Test Key" },
       },
     },
   });
@@ -404,48 +404,123 @@ Deno.test(
 );
 
 Deno.test(
-  { name: "Translate a key and handle function calls" },
+  {
+    name:
+      "Translate a key with added data and nested objects (this time with array lengths)",
+  },
   () => {
     const svc = new LocaleKit();
 
     svc.addLanguage("en", {
       common: {
-        test_age:
-          "You are [[~ {age} LTE(num:12): `a child` | BT(num:12, num:18): `a teenager` | GTE(num:18): `an adult` ]]",
-        test_array:
-          "You have [[~ {messages.length} EQ(num:0): `no` | LTE(num:3): `some` | LTE(num:8): `a few` | LTE(num:40): `a lot of` | GTE(num:41): `too many` | default: `{{messages.length}}` ]] messages",
+        test:
+          "You have [[~ {friends} LEN_GTE(num:3): `some` | default: `a couple` ]] friends",
       },
     });
 
-    const arr = new Array(0);
-
-    assertEquals(svc.t("common.test_age", { age: 18 }), "You are an adult");
-    assertEquals(svc.t("common.test_age", { age: 13 }), "You are a teenager");
-    assertEquals(svc.t("common.test_age", { age: 8 }), "You are a child");
-
     assertEquals(
-      svc.t("common.test_array", { messages: arr }),
-      "You have no messages",
+      svc.t("common.test", { friends: ["goerge", "jeff", "amy"] }),
+      "You have some friends",
     );
-    arr.length = 3;
     assertEquals(
-      svc.t("common.test_array", { messages: arr }),
-      "You have some messages",
-    );
-    arr.length = 8;
-    assertEquals(
-      svc.t("common.test_array", { messages: arr }),
-      "You have a few messages",
-    );
-    arr.length = 40;
-    assertEquals(
-      svc.t("common.test_array", { messages: arr }),
-      "You have a lot of messages",
-    );
-    arr.length = 41;
-    assertEquals(
-      svc.t("common.test_array", { messages: arr }),
-      "You have too many messages",
+      svc.t("common.test", { friends: ["goerge", "jeff"] }),
+      "You have a couple friends",
     );
   },
 );
+
+Deno.test(
+  {
+    name:
+      "Translate a key with added data and nested objects (this time with string lengths)",
+  },
+  () => {
+    const svc = new LocaleKit();
+
+    svc.addLanguage("en", {
+      common: {
+        test:
+          "This is a [[~ {str} LEN_GTE(num:12): `longer` | default: `shorter` ]] string",
+      },
+    });
+
+    assertEquals(
+      svc.t("common.test", { str: "Hello World!" }),
+      "This is a longer string",
+    );
+    assertEquals(
+      svc.t("common.test", { str: "Hello!" }),
+      "This is a shorter string",
+    );
+  },
+);
+
+Deno.test(
+  {
+    name:
+      "Translate a key with added data and nested objects (this time with object lengths)",
+  },
+  () => {
+    const svc = new LocaleKit();
+
+    svc.addLanguage("en", {
+      common: {
+        test:
+          "This is a [[~ {obj} LEN_GTE(num:3): `longer` | default: `shorter` ]] object",
+      },
+    });
+
+    assertEquals(
+      svc.t("common.test", { obj: { key_1: true, key_2: true, key_3: true } }),
+      "This is a longer object",
+    );
+    assertEquals(
+      svc.t("common.test", { obj: { key_1: true, key_2: true } }),
+      "This is a shorter object",
+    );
+  },
+);
+
+Deno.test({ name: "Translate a key and handle function calls" }, () => {
+  const svc = new LocaleKit();
+
+  svc.addLanguage("en", {
+    common: {
+      test_age:
+        "You are [[~ {age} LTE(num:12): `a child` | BT(num:12, num:18): `a teenager` | GTE(num:18): `an adult` ]]",
+      test_array:
+        "You have [[~ {messages.length} EQ(num:0): `no` | LTE(num:3): `some` | LTE(num:8): `a few` | LTE(num:40): `a lot of` | GTE(num:41): `too many` | default: `{{messages.length}}` ]] messages",
+    },
+  });
+
+  const arr = new Array(0);
+
+  assertEquals(svc.t("common.test_age", { age: 18 }), "You are an adult");
+  assertEquals(svc.t("common.test_age", { age: 13 }), "You are a teenager");
+  assertEquals(svc.t("common.test_age", { age: 8 }), "You are a child");
+
+  assertEquals(
+    svc.t("common.test_array", { messages: arr }),
+    "You have no messages",
+  );
+  arr.length = 3;
+  assertEquals(
+    svc.t("common.test_array", { messages: arr }),
+    "You have some messages",
+  );
+  arr.length = 8;
+  assertEquals(
+    svc.t("common.test_array", { messages: arr }),
+    "You have a few messages",
+  );
+  arr.length = 40;
+  assertEquals(
+    svc.t("common.test_array", { messages: arr }),
+    "You have a lot of messages",
+  );
+  arr.length = 41;
+  assertEquals(
+    svc.t("common.test_array", { messages: arr }),
+    "You have too many messages",
+  );
+});
