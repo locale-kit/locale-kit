@@ -14,7 +14,7 @@ const getLen = (a: ArgType): ArgType => {
   } else if (typeof a === "object") {
     return Object.keys(a).length;
   } else {
-    return NaN;
+    return 0;
   }
 };
 
