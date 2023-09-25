@@ -1,7 +1,6 @@
 import { getNestedKeyValue } from "./obj.ts";
 import { FUNC_NAMES, FUNCS, getFunctionParameters } from "./function.ts";
 import { FunctionType } from "../types/fn.ts";
-import { ArgType } from "../types/format.ts";
 
 const DYN_STR_REGEX =
   /\[\[~\s*(?:{(?<data_key>.*?)})\s*(?<cases>(?:\s*(?<case_key>(?:(?:[\w-])|(?:(?:LEN_)?N?GTE?|(?:LEN_)?N?LTE?|(?:LEN_)?N?EQ|(?:LEN_)?N?BT|(?:LEN_)?N?IN|CUSTOM|(?:LEN_)?X?OR|(?:LEN_)?AND)\((?:[^)]+)\))+)\s*:\s*(?:(?:`[^`]*`)|(?:;:(?:(?!:;).)*:;))\s*\|*\s*)+)+\]\]/gs;
