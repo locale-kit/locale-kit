@@ -12,10 +12,12 @@
     }
   },
   "test": {
-    "files": {
-      "include": [],
-      "exclude": ["npm_build/"]
-    }
+    "include": ["test/"],
+    "exclude": ["npm_build/"]
+  },
+  "bench": {
+    "include": ["test/"],
+    "exclude": ["npm_build/"]
   },
   "compilerOptions": {}
 }

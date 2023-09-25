@@ -4,6 +4,7 @@ import {
 } from "https://deno.land/std@0.160.0/testing/asserts.ts";
 
 import { LocaleKit } from "../mod.ts";
+import { FunctionType } from "../types/fn.ts";
 
 Deno.test("Init with language", () => {
   const svc = new LocaleKit({
@@ -524,3 +525,53 @@ Deno.test({ name: "Translate a key and handle function calls" }, () => {
     "You have too many messages",
   );
 });
+
+// Create a test for when a case has a function argument
+Deno.test(
+  {
+    name:
+      "Translate a key and handle function calls that have function parameters",
+  },
+  () => {
+    const svc = new LocaleKit();
+
+    svc.addLanguage("en", {
+      common: {
+        test_age:
+          "You are [[~ {age} CUSTOM(fn: {isChild}): `a child` | CUSTOM(fn: {isTeen}): `a teenager` | CUSTOM(fn: {isAdult}): `an adult` ]]",
+      },
+    });
+
+    const fns: Record<string, FunctionType> = {
+      isChild: (age: unknown, _ctx, _matched) => {
+        return (age as number) <= 12;
+      },
+      isTeen: (age: unknown, _ctx, _matched) => {
+        return (age as number) > 12 && (age as number) < 18;
+      },
+      isAdult: (age: unknown, _ctx, _matched) => {
+        return (age as number) >= 18;
+      },
+    };
+
+    assertEquals(
+      svc.t("common.test_age", { age: 18 }, fns),
+      "You are an adult",
+    );
+    assertEquals(
+      svc.t("common.test_age", { age: 13 }, fns),
+      "You are a teenager",
+    );
+    assertEquals(svc.t("common.test_age", { age: 8 }, fns), "You are a child");
+    assertEquals(svc.t("common.test_age", { age: 0 }, fns), "You are a child");
+    assertEquals(svc.t("common.test_age", { age: 12 }, fns), "You are a child");
+    assertEquals(
+      svc.t("common.test_age", { age: 17 }, fns),
+      "You are a teenager",
+    );
+    assertEquals(
+      svc.t("common.test_age", { age: 18 }, fns),
+      "You are an adult",
+    );
+  },
+);

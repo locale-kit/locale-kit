@@ -1,29 +1,37 @@
 import { getNestedKeyValue } from "./obj.ts";
 import { FUNC_NAMES, FUNCS, getFunctionParameters } from "./function.ts";
+import { FunctionType } from "../types/fn.ts";
+import { ArgType } from "../types/format.ts";
 
 const DYN_STR_REGEX =
-  /\[\[~\s*(?:{(?<data_key>.*?)})\s*(?<cases>(?:\s*(?<case_key>(?:(?:[\w-])|(?:(?:LEN_)?N?GTE?|(?:LEN_)?N?LTE?|(?:LEN_)?N?EQ|(?:LEN_)?N?BT|(?:LEN_)?N?IN|(?<!LEN_)X?OR|(?<!LEN_)AND)\((?:[^)]+)\))+)\s*:\s*(?:(?:`[^`]*`)|(?:;:(?:(?!:;).)*:;))\s*\|*\s*)+)+\]\]/gs;
+  /\[\[~\s*(?:{(?<data_key>.*?)})\s*(?<cases>(?:\s*(?<case_key>(?:(?:[\w-])|(?:(?:LEN_)?N?GTE?|(?:LEN_)?N?LTE?|(?:LEN_)?N?EQ|(?:LEN_)?N?BT|(?:LEN_)?N?IN|CUSTOM|(?:LEN_)?X?OR|(?:LEN_)?AND)\((?:[^)]+)\))+)\s*:\s*(?:(?:`[^`]*`)|(?:;:(?:(?!:;).)*:;))\s*\|*\s*)+)+\]\]/gs;
 const DYN_CASEKEY_REGEX =
-  /(?<case_key>(?:(?:[\w-])|(?:(?:LEN_)?N?GTE?|(?:LEN_)?N?LTE?|(?:LEN_)?N?EQ|(?:LEN_)?N?BT|(?:LEN_)?N?IN|(?<!LEN_)X?OR|(?<!LEN_)AND)\((?:[^)]+)\))+)\s*:\s*(?:(?:`(?<content_a>[^`]*)`)|(?:;:(?<content_b>(?:(?!:;).)*):;))/gs;
+  /(?<case_key>(?:(?:[\w-])|(?:(?:LEN_)?N?GTE?|(?:LEN_)?N?LTE?|(?:LEN_)?N?EQ|(?:LEN_)?N?BT|(?:LEN_)?N?IN|CUSTOM|(?:LEN_)?X?OR|(?:LEN_)?AND)\((?:[^)]+)\))+)\s*:\s*(?:(?:`(?<content_a>[^`]*)`)|(?:;:(?<content_b>(?:(?!:;).)*):;))/gs;
 
 /**
  * Function for handling
  */
 const DYN_FUNC_REGEX =
-  /(?<func>(?:LEN_)?N?GTE?|(?:LEN_)?N?LTE?|(?:LEN_)?N?EQ|(?:LEN_)?N?BT|(?:LEN_)?N?IN|(?<!LEN_)X?OR|(?<!LEN_)AND)\((?<args>[^)]+)\)/s;
+  /(?<func>(?:LEN_)?N?GTE?|(?:LEN_)?N?LTE?|(?:LEN_)?N?EQ|(?:LEN_)?N?BT|(?:LEN_)?N?IN|CUSTOM|(?:LEN_)?X?OR|(?:LEN_)?AND)\((?<args>[^)]+)\)/s;
 
 /**
  * Regex for inner content replacement
  */
 const DYN_NESTED_REGEX = /\{\{(.*?)\}\}(?:\|\|(.*?)\|\|)?/gs;
 
-export function format(str = "", opts: Record<string, unknown> = {}) {
+export function format<T extends Record<string, unknown>>(
+  str = "",
+  data?: T,
+  functions?: Record<string, FunctionType<T>>,
+) {
+  const ctx = data || ({} as T);
+
   // Find anything matching something similar to [[~ {object.nested.key} 1: `string` | 2: `{{object.second.nested.key}} string` | 3: `string` | ... | default: `string` ]]
   // and replace it with the correct string depending on the value of the object.nested.key
   const translated = str.replaceAll(
     DYN_STR_REGEX,
     (
-      _matched_str: string,
+      matched_str: string,
       _key: string,
       _dyn_field: string,
       _case_key: string,
@@ -31,7 +39,7 @@ export function format(str = "", opts: Record<string, unknown> = {}) {
       _src_str: string,
       groups: { data_key: string; case_key: string; cases: string },
     ) => {
-      let cur_val = getNestedKeyValue(opts, groups["data_key"]);
+      let cur_val = getNestedKeyValue(ctx, groups["data_key"]);
 
       if (cur_val === undefined) {
         cur_val = "default";
@@ -66,9 +74,14 @@ export function format(str = "", opts: Record<string, unknown> = {}) {
             return;
           }
 
-          const [arg1_obj, arg2_obj] = getFunctionParameters(key, opts);
-          const arg1 = arg1_obj?.val;
-          const arg2 = arg2_obj?.val;
+          // Fetch the function parameters
+          const [arg1_obj, arg2_obj] = getFunctionParameters(
+            key,
+            ctx,
+            functions,
+          );
+          let arg1 = arg1_obj?.val;
+          let arg2 = arg2_obj?.val;
           const arg1_type = arg1_obj?.type;
           const arg2_type = arg2_obj?.type;
 
@@ -99,13 +112,25 @@ export function format(str = "", opts: Record<string, unknown> = {}) {
             return;
           }
 
+          if (arg1_type === "fn") {
+            const fn_to_be_wrapped = arg1 as FunctionType<T>;
+            // Wrap the function in a new function that returns a boolean, also give the wrapped function a callback to return a value
+            arg1 = (a: unknown) => {
+              return !!fn_to_be_wrapped(a, ctx, matched_str);
+            };
+          }
+
+          if (arg2_type === "fn") {
+            const fn_to_be_wrapped = arg2 as FunctionType<T>;
+            arg2 = (a: unknown) => {
+              return !!fn_to_be_wrapped(a, ctx, matched_str);
+            };
+          }
+
           // If the types are valid, run the function
-          const result =
-            (func_obj.func as (a: string, b: string, c: string) => boolean)(
-              cur_val as string,
-              arg1 as string,
-              arg2 as string,
-            );
+          const result = (
+            func_obj.func as (a: string, b: string, c: string) => boolean
+          )(cur_val as string, arg1 as string, arg2 as string);
 
           // If the result is true, set the value of this key to the
           // external func_case_val variable for further use
@@ -140,7 +165,7 @@ export function format(str = "", opts: Record<string, unknown> = {}) {
   const formatted = translated.replaceAll(
     DYN_NESTED_REGEX,
     (_match, key, fallback) => {
-      const val = getNestedKeyValue(opts, key);
+      const val = getNestedKeyValue(ctx, key);
       if (val === undefined) {
         return fallback || "[no_value]";
       }

@@ -1,3 +1,4 @@
+import { FunctionType } from "./types/fn.ts";
 import { format } from "./util/format.ts";
 import { flattenObject } from "./util/obj.ts";
 
@@ -138,14 +139,18 @@ export class LocaleKit {
    * @param opts Options for the translation (lang, data, etc.)
    * @returns The translated string
    */
-  t(key: string, opts?: Record<string, unknown>) {
+  t<T extends Record<string, unknown>>(
+    key: string,
+    opts?: T,
+    functions?: Record<string, FunctionType<T>>,
+  ) {
     // Make sure the langauge is supported
     const found = this.getKey(
       (opts?.lang || this.fallback_language) as string,
       key,
     );
 
-    return format(found, opts || {});
+    return format(found, opts || ({} as T), functions || {});
   }
 
   /**
