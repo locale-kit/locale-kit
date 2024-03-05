@@ -1,23 +1,43 @@
 {
   "fmt": {
-    "exclude": ["README.md", "npm_build/"],
+    "exclude": [
+      "README.md",
+      "npm_build/"
+    ],
     "options": {}
   },
   "lint": {
-    "exclude": ["npm_build/"],
+    "exclude": [
+      "npm_build/"
+    ],
     "rules": {
-      "tags": ["recommended"],
+      "tags": [
+        "recommended"
+      ],
       "include": [],
       "exclude": []
     }
   },
   "test": {
-    "include": ["test/"],
-    "exclude": ["npm_build/"]
+    "include": [
+      "test/"
+    ],
+    "exclude": [
+      "npm_build/"
+    ]
   },
   "bench": {
-    "include": ["test/"],
-    "exclude": ["npm_build/"]
+    "include": [
+      "test/"
+    ],
+    "exclude": [
+      "npm_build/"
+    ]
   },
-  "compilerOptions": {}
+  "compilerOptions": {},
+  "tasks": {
+    "lint": "deno run -A npm:@biomejs/biome lint **/*.ts",
+    "format": "deno run -A npm:@biomejs/biome format **/*.ts --write",
+    "check": "deno run -A npm:@biomejs/biome check --apply **/*.ts"
+  }
 }
