@@ -32,10 +32,7 @@ jobs:
           deno-version: v1.x
 
       - name: Verify formatting
-        run: deno fmt --check
-
-      - name: Run linter
-        run: deno lint
+        run: deno task check
 
       - name: Get tag version
         if: startsWith(github.ref, 'refs/tags/')
