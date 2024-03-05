@@ -229,7 +229,11 @@ export class Flattened {
 					const { value_type: new_value_type } = this.getType(key, value);
 
 					value_type = new_value_type;
-					key_part = this.encodeKeyPart(key, manual_value_type, value_type);
+					key_part = this.encodeKeyPart(
+						key,
+						manual_value_type as "index",
+						value_type,
+					);
 					break;
 				}
 				case isString(value):
