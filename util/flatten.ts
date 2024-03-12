@@ -1,14 +1,14 @@
 import { getNestedKeyValue } from "./obj.ts";
-
-const isString = (value: unknown): boolean => typeof value === "string";
-const isBoolean = (value: unknown): boolean => typeof value === "boolean";
-const isNumber = (value: unknown): boolean => typeof value === "number";
-const isUndefined = (value: unknown): boolean => typeof value === "undefined";
-const isBigInt = (value: unknown): boolean => typeof value === "bigint";
-const isArray = (value: unknown): boolean => Array.isArray(value);
-const isNull = (value: unknown): boolean => value === null;
-const isObject = (value: unknown): boolean =>
-	Object.prototype.toString.call(value) === "[object Object]";
+import {
+	isArray,
+	isBigInt,
+	isBoolean,
+	isNull,
+	isNumber,
+	isObject,
+	isString,
+	isUndefined,
+} from "./is.ts";
 
 type FlattenedObject = {
 	__map: Record<string, string>;

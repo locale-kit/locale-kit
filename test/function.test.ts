@@ -1,7 +1,4 @@
-import {
-	assertEquals,
-	assertObjectMatch,
-} from "https://deno.land/std@0.218.2/assert/mod.ts";
+import { assertEquals, assertObjectMatch } from "./_test.ts";
 import { getFunctionParameters } from "../util/function.ts";
 
 Deno.test("getFunctionParameters with no arguments", () => {

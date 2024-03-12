@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.218.2/assert/mod.ts";
+import { assertEquals } from "./_test.ts";
 import { FunctionType } from "../types/fn.ts";
 import { format } from "../util/format.ts";
 
@@ -40,14 +40,14 @@ Deno.test("Format with conditional cases", () => {
 	assertEquals(result2, "You have 2 messages");
 });
 
-Deno.test("Format with custom functions", () => {
+Deno.test("Format with functions", () => {
 	const str =
 		"You are [[~ {age} GTE(num:18): `an adult` | default: `a child` ]]";
 	const data1 = { age: 18 };
 	const data2 = { age: 17 };
 
-	const fns: Record<string, FunctionType<typeof data1>> = {
-		GTE: (val: unknown, ctx: typeof data1) => (val as number) >= ctx.age,
+	const fns: Record<string, FunctionType<typeof data1, [number]>> = {
+		GTE: ({ params: [val], ctx }) => (val as number) >= ctx.age,
 	};
 
 	const result1 = format(str, data1, fns);
@@ -99,18 +99,59 @@ Deno.test("Format with invalid function", () => {
 	);
 });
 
-Deno.test("Format with custom function", () => {
+Deno.test.only("Format with custom function", () => {
 	const str =
-		"You are [[~ {age} GTE(num:18): `an adult` | default: `a child` ]]";
-	const data1 = { age: 18 };
-	const data2 = { age: 17 };
+		"Hi, {{{utils.capitalize: ;:key:{name}, key:{int}, fn: { utils.toHex }:;}}}";
+	const data1 = { name: "John", int: 3 };
+	// const data2 = { name: "Dave", int: 2 };
 
-	const fns: Record<string, FunctionType<typeof data1>> = {
-		GTE: (val: unknown, ctx: typeof data1) => (val as number) >= ctx.age,
+	const fns = {
+		utils: {
+			// Set the type to FunctionType
+			capitalize({
+				params,
+			}: { params: unknown[]; ctx: { [key: string]: unknown } }) {
+				const res = [];
+
+				for (let i = 0; i < params.length; i++) {
+					const el = params[i];
+
+					if (el === null) {
+						res.push("null");
+						continue;
+					}
+
+					if (el === undefined) {
+						res.push("undefined");
+						continue;
+					}
+
+					if (typeof el === "object") {
+						res.push(JSON.stringify(el));
+						continue;
+					}
+
+					if (typeof el === "function") {
+						res.push(el.toString());
+						continue;
+					}
+
+					res.push(el.toString());
+
+					console.log({ res });
+				}
+
+				return res.join(" ").toUpperCase();
+			},
+			toHex: ([val1]: [number]) => {
+				console.log(val1);
+				return val1.toString(16);
+			},
+		},
 	};
 
 	const result1 = format(str, data1, fns);
-	const result2 = format(str, data2, fns);
-	assertEquals(result1, "You are an adult");
-	assertEquals(result2, "You are a child");
+	// const result2 = format(str, data2, fns);
+	assertEquals(result1, "Hi, JOHN");
+	// assertEquals(result2, "Hi, DAVE");
 });

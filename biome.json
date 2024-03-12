@@ -4,6 +4,10 @@
 		"enabled": true
 	},
 	"linter": {
+		"ignore": [
+			"**/node_modules/**",
+			"npm_build/**"
+		],
 		"enabled": true,
 		"rules": {
 			"recommended": true

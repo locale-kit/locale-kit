@@ -1,7 +1,4 @@
-import {
-	assertEquals,
-	assertObjectMatch,
-} from "https://deno.land/std@0.218.2/assert/mod.ts";
+import { assertEquals, assertObjectMatch } from "./_test.ts";
 
 import { LocaleKit } from "../mod.ts";
 import { FunctionType } from "../types/fn.ts";

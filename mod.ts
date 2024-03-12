@@ -1,6 +1,8 @@
-import { FunctionType } from "./types/fn.ts";
+import type { FunctionType } from "./types/fn.ts";
 import { Flattened } from "./util/flatten.ts";
 import { format } from "./util/format.ts";
+
+export type { FunctionType };
 
 /**
  * The main translation/language class. This handles storage of languages,
@@ -66,14 +68,15 @@ export class LocaleKit {
 	 * Add a new language into the languages object
 	 * @param code The language code to add
 	 * @param lang The language object to add
+	 * @param flattened Whether the language object is already flattened
 	 */
 	addLanguage(
 		code: string,
 		lang: Record<string, unknown> | Flattened,
 		flattened = false,
-	) {
+	): void {
 		this.languages[code] =
-			flattened && <unknown>flattened instanceof Flattened
+			flattened && lang instanceof Flattened
 				? Flattened.fromFlattened(lang as Flattened)
 				: Flattened.toFlattened(lang as Record<string, unknown>);
 	}
@@ -83,14 +86,24 @@ export class LocaleKit {
 	 * @param code The language code to use
 	 * @returns The language object for the given language code
 	 */
-	hydrateLanguage(code: string, lang: Record<string, unknown> | Flattened) {
+	hydrateLanguage(
+		code: string,
+		lang: Record<string, unknown> | Flattened,
+	): void {
 		let new_obj: Flattened;
 		if (lang instanceof Flattened) {
 			new_obj = lang;
 		} else {
 			new_obj = Flattened.toFlattened(lang);
 		}
-		this.addLanguage(code, this.languages[code].mergeFlattened(new_obj));
+
+		this.addLanguage(
+			code,
+			this.isSupported(code)
+				? this.languages[code].mergeFlattened(new_obj)
+				: new_obj,
+			true,
+		);
 		this.setHydrated(code);
 	}
 
@@ -109,7 +122,7 @@ export class LocaleKit {
 	 * @param code The language code to check
 	 * @returns Whether the language is hydrated
 	 */
-	isHydrated(code: string) {
+	isHydrated(code: string): boolean {
 		return this.hydrated_languages.includes(code);
 	}
 
@@ -119,7 +132,7 @@ export class LocaleKit {
 	 * @returns Whether the language is supported
 	 */
 	isSupported(code: string): boolean {
-		return !!this.languages[code];
+		return Object.hasOwn(this.languages, code);
 	}
 
 	/**
@@ -155,7 +168,7 @@ export class LocaleKit {
 	t<T extends Record<string, unknown>>(
 		key: string,
 		opts?: T,
-		functions?: Record<string, FunctionType<T>>,
+		functions?: Record<string, unknown>,
 	) {
 		// Make sure the langauge is supported
 		const found = this.getKey(
@@ -163,7 +176,11 @@ export class LocaleKit {
 			key,
 		);
 
-		return format(found, opts || ({} as T), functions || {});
+		return format(
+			found,
+			opts || ({} as T),
+			(functions || {}) as Record<string, FunctionType<T>>,
+		);
 	}
 
 	/**
@@ -171,9 +188,19 @@ export class LocaleKit {
 	 * @param lang_code The language code to use
 	 * @returns Function taking place of the t method
 	 */
-	getTranslationFunc(lang_code: string) {
-		return (key: string, opts: Record<string, unknown> = {}) => {
-			return this.t(key, { lang: lang_code, ...opts });
+	getTranslationFunc(
+		lang_code: string,
+	): (
+		key: string,
+		opts?: Record<string, unknown>,
+		fns?: Record<string, unknown>,
+	) => string {
+		return (
+			key: string,
+			opts: Record<string, unknown> = {},
+			fns: Record<string, unknown> = {},
+		) => {
+			return this.t(key, { lang: lang_code, ...opts }, fns);
 		};
 	}
 }

@@ -1,7 +1,4 @@
-import {
-	assertEquals,
-	assertObjectMatch,
-} from "https://deno.land/std@0.218.2/assert/mod.ts";
+import { assertEquals, assertObjectMatch } from "./_test.ts";
 import { Flattened } from "../util/flatten.ts";
 
 Deno.test("toObject method returns the unflattened object", () => {

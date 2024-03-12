@@ -1,16 +1,21 @@
-// deno-lint-ignore-file no-explicit-any
-export type ArgType = number | string;
+import type { FunctionObj } from "../util/match/refs.ts";
+import type { Any } from "../util/match/utils/any.ts";
 
-export type FuncParamType = "num" | "str" | "key" | "bool" | "fn";
+// deno-lint-ignore-file no-explicit-any
+// export type ArgType = number | string;
+
+export type FuncArgsType<T = Any, P = Any[]> = {
+	ctx: Record<string, unknown>;
+	fns: FunctionObj;
+	value: T;
+	params: P;
+};
+
+export type FuncType<T = Any, P = Any[]> = (opts: FuncArgsType) => boolean;
 
 /**
  * A map of functions, how many args and their types they take, and their names
  */
 export interface FUNCSMapType {
-	[func_name: string]: {
-		arg_count: number;
-		arg_types: [FuncParamType[], FuncParamType[]?];
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		func: (...args: any[]) => boolean;
-	};
+	[func_name: string]: FuncType;
 }
