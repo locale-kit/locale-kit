@@ -101,7 +101,7 @@ Deno.test("Format with invalid function", () => {
 Deno.test("Format with custom function", () => {
 	const str = "Hi, {{fn: [utils.capitalize]( key:'name' )}}";
 	const data1 = { name: "John", int: 3 };
-	// const data2 = { name: "Dave", int: 2 };
+	const data2 = { name: "Dave", int: 2 };
 
 	const fns: FuncObj = {
 		utils: {
@@ -137,15 +137,14 @@ Deno.test("Format with custom function", () => {
 
 				return res.join(" ").toUpperCase();
 			},
-			toHex: (opts) => {
-				console.log({ opts });
-				// return value.toString(16);
+			toHex: ({ value }) => {
+				return value.toString(16);
 			},
 		},
 	};
 	// str, data1, fns
 	const result1 = format(str, data1, fns);
-	// const result2 = format(str, data2, fns);
+	const result2 = format(str, data2, fns);
 	assertEquals(result1, "Hi, JOHN");
-	// assertEquals(result2, "Hi, DAVE");
+	assertEquals(result2, "Hi, DAVE");
 });
