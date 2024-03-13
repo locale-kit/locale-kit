@@ -1,7 +1,5 @@
-import type { FUNCSMapType, FuncArgsType, FuncType } from "../types/format.ts";
-import { isString, isNumber, isBigInt, isArray, isObject } from "./is.ts";
-import { Any } from "./match/utils/any.ts";
-import { getNestedKeyValue } from "./obj.ts";
+import type { FuncArgsType, FuncType } from "../types/fn.ts";
+import { isArray, isBigInt, isNumber, isObject, isString } from "./is.ts";
 
 const MAXSAFEINT = BigInt(Number.MAX_SAFE_INTEGER);
 
@@ -38,14 +36,14 @@ const paramLimiter = (
 
 const funcGT: FuncType<number, number[]> = ({ value: a, params }) =>
 	a > reduceNumbers(params);
-const funcGTE: FuncType<number, number[]> = ({ value: a, params }) =>
-	a >= reduceNumbers(params);
+const funcGTE: FuncType<number, number[]> = ({ value: a, params }) => {
+	return a >= reduceNumbers(params);
+};
 const funcNGT: FuncType<number, number[]> = (opts) => !funcGT(opts);
 const funcNGTE: FuncType<number, number[]> = (opts) => !funcGTE(opts);
 const funcLT: FuncType<number, number[]> = ({ value: a, params }) =>
 	a < reduceNumbers(params);
 const funcLTE: FuncType<number, number[]> = ({ value: a, params }) => {
-	console.log({ a, params });
 	return a <= reduceNumbers(params);
 };
 const funcNLT: FuncType<number, number[]> = (opts) => !funcLT(opts);
@@ -63,7 +61,14 @@ const funcBT: FuncType<number, number[]> = (opts) =>
 
 const funcNBT: FuncType<number, number[]> = (opts) => !funcBT(opts);
 const funcIN: FuncType = ({ value: a, params: [b] }) =>
-	(Array.isArray(b) ? b : b.split(" ")).includes(a);
+	(isArray(b)
+		? b
+		: isString(b)
+		  ? b.split(" ")
+		  : isObject(b)
+			  ? Object.keys(b)
+			  : []
+	).includes(a);
 const funcNIN: FuncType = (opts) => !funcIN(opts);
 const funcOR: FuncType = ({ value: a, params }) => {
 	if (a) return true;
@@ -111,21 +116,21 @@ const funcLEN_EQ: FuncType = (opts) => handleLen(opts, funcEQ);
 const funcLEN_NEQ: FuncType = (opts) => handleLen(opts, funcNEQ);
 const funcLEN_BT: FuncType = (opts) => handleLen(opts, funcBT);
 const funcLEN_NBT: FuncType = (opts) => handleLen(opts, funcNBT);
-const funcLEN_IN = (opts: FuncArgsType) => handleLen(opts, funcIN);
-const funcLEN_NIN = (opts: FuncArgsType) => handleLen(opts, funcNIN);
-const funcCUSTOM = (opts: FuncArgsType) => {
-	const filtered = opts.params.filter((p) => typeof p === "function");
+const funcLEN_IN: FuncType = (opts) => handleLen(opts, funcIN);
+const funcLEN_NIN: FuncType = (opts) => handleLen(opts, funcNIN);
+const funcCUSTOM: FuncType = (opts) => {
+	const filtered = opts.params.filter((p) => typeof p === "boolean");
 	if (filtered.length === 0) return false;
 
 	// Make sure that all the functions are truthy, escaping early if not
 	for (const p of filtered) {
-		if (!p(opts)) return false;
+		if (!p) return false;
 	}
 
 	return true;
 };
 
-export const FUNCS: Map<string, FuncType<unknown, unknown[]>> = new Map([
+const FUNCS: Map<string, FuncType<number, number[]>> = new Map([
 	["GT", funcGT],
 	["GTE", funcGTE],
 	["NGT", funcNGT],
@@ -159,3 +164,5 @@ export const FUNCS: Map<string, FuncType<unknown, unknown[]>> = new Map([
 	["XOR", funcXOR],
 	["CUSTOM", funcCUSTOM],
 ]);
+
+export { FUNCS };

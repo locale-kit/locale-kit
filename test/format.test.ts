@@ -1,6 +1,8 @@
 import { assertEquals } from "./_test.ts";
-import { FunctionType } from "../types/fn.ts";
 import { format } from "../util/format.ts";
+import type { FuncType } from "../types/fn.ts";
+import type { FuncObj } from "../types/fn.ts";
+import { Is } from "../mod.ts";
 
 Deno.test("Format with no data", () => {
 	const str = "Hello, {{name}}!";
@@ -9,14 +11,14 @@ Deno.test("Format with no data", () => {
 });
 
 Deno.test("Format with data", () => {
-	const str = "Hello, {{name}}!";
+	const str = "Hello, {{key: 'name'}}!";
 	const data = { name: "John Doe" };
 	const result = format(str, data);
 	assertEquals(result, "Hello, John Doe!");
 });
 
 Deno.test("Format with nested data", () => {
-	const str = "Hello, {{user.name}}!";
+	const str = "Hello, {{key: 'user.name'}}!";
 	const data = { user: { name: "John Doe" } };
 	const result = format(str, data);
 	assertEquals(result, "Hello, John Doe!");
@@ -31,7 +33,7 @@ Deno.test("Format with fallback value", () => {
 
 Deno.test("Format with conditional cases", () => {
 	const str =
-		"You have {{count}} [[~ {count} 1: `message` | default: `messages` ]]";
+		"You have {{key:'count'}} [[~ {count} 1: `message` | default: `messages` ~]]";
 	const data1 = { count: 1 };
 	const data2 = { count: 2 };
 	const result1 = format(str, data1);
@@ -42,12 +44,12 @@ Deno.test("Format with conditional cases", () => {
 
 Deno.test("Format with functions", () => {
 	const str =
-		"You are [[~ {age} GTE(num:18): `an adult` | default: `a child` ]]";
-	const data1 = { age: 18 };
+		"You are [[~ {age} GTE(num:18): `an adult` | default: `a child` ~]]";
+	const data1 = { age: 18 } as const;
 	const data2 = { age: 17 };
 
-	const fns: Record<string, FunctionType<typeof data1, [number]>> = {
-		GTE: ({ params: [val], ctx }) => (val as number) >= ctx.age,
+	const fns: Record<string, FuncType<number, unknown[]>> = {
+		GTE: ({ value, ctx }) => value >= (ctx?.age as number),
 	};
 
 	const result1 = format(str, data1, fns);
@@ -90,28 +92,22 @@ Deno.test("Format with missing fallback value", () => {
 
 Deno.test("Format with invalid function", () => {
 	const str =
-		"You are [[~ {age} INVALID(num:18): `an adult` | default: `a child` ]]";
+		"You are [[~ {age} INVALID(num:18): `an adult` | default: `a child` ~]]";
 	const data = { age: 18 };
 	const result = format(str, data);
-	assertEquals(
-		result,
-		"You are [[~ {age} INVALID(num:18): `an adult` | default: `a child` ]]",
-	);
+	assertEquals(result, "You are a child");
 });
 
-Deno.test.only("Format with custom function", () => {
-	const str =
-		"Hi, {{{utils.capitalize: ;:key:{name}, key:{int}, fn: { utils.toHex }:;}}}";
+Deno.test("Format with custom function", () => {
+	const str = "Hi, {{fn: [utils.capitalize]( key:'name' )}}";
 	const data1 = { name: "John", int: 3 };
 	// const data2 = { name: "Dave", int: 2 };
 
-	const fns = {
+	const fns: FuncObj = {
 		utils: {
-			// Set the type to FunctionType
-			capitalize({
-				params,
-			}: { params: unknown[]; ctx: { [key: string]: unknown } }) {
-				const res = [];
+			// Set the type to
+			capitalize({ params }) {
+				const res: string[] = [];
 
 				for (let i = 0; i < params.length; i++) {
 					const el = params[i];
@@ -126,30 +122,28 @@ Deno.test.only("Format with custom function", () => {
 						continue;
 					}
 
-					if (typeof el === "object") {
+					if (Is.isObject(el) || Is.isArray(el)) {
 						res.push(JSON.stringify(el));
 						continue;
 					}
 
-					if (typeof el === "function") {
+					if (Is.isFunction(el)) {
 						res.push(el.toString());
 						continue;
 					}
 
 					res.push(el.toString());
-
-					console.log({ res });
 				}
 
 				return res.join(" ").toUpperCase();
 			},
-			toHex: ([val1]: [number]) => {
-				console.log(val1);
-				return val1.toString(16);
+			toHex: (opts) => {
+				console.log({ opts });
+				// return value.toString(16);
 			},
 		},
 	};
-
+	// str, data1, fns
 	const result1 = format(str, data1, fns);
 	// const result2 = format(str, data2, fns);
 	assertEquals(result1, "Hi, JOHN");

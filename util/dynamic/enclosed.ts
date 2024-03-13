@@ -1,4 +1,4 @@
-import { _sep, makeRegex, _s, bit_of_anything } from "../match/utils/common.ts";
+import { _s, _sep, bit_of_anything, makeRegex } from "../match/utils/common.ts";
 import { arg, asymetricBorderedPart } from "../match/utils/util.ts";
 
 /**
@@ -7,15 +7,17 @@ import { arg, asymetricBorderedPart } from "../match/utils/util.ts";
  * The format inside the double square brackets follows a specific pattern.
  * This regular expression is used to extract and process the dynamic strings.
  */
-export const DYN_STR_REGEX = makeRegex(
-	[
-		"\\[\\[~",
-		_s,
-		asymetricBorderedPart(["{", "}"], true, "data_key"),
-		_s,
-		arg("cases", bit_of_anything),
-		_s,
-		"~\\]\\]",
-	],
-	"g",
+const DYN_STR_REGEX = makeRegex(
+  [
+    "\\[\\[~",
+    _s,
+    asymetricBorderedPart(["{", "}"], true, "data_key"),
+    _s,
+    arg("cases", bit_of_anything),
+    _s,
+    "~\\]\\]",
+  ],
+  "g",
 );
+
+export { DYN_STR_REGEX };

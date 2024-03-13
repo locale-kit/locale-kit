@@ -11,7 +11,7 @@ import { _sep, getBorderedArgument } from "./utils/common.ts";
  * @returns The bordered argument obtained from the input string.
  */
 const parseStr = (str: string) => {
-	return getBorderedArgument(str, strict_form_str);
+  return getBorderedArgument(str, strict_form_str);
 };
 
 export { parseStr };

@@ -1,68 +1,35 @@
 import { _sep, makeRegex } from "../match/utils/common.ts";
 import {
-	orParts,
-	borderedpart,
-	arg,
-	asymetricBorderedPart,
-	optional,
-	noCapture,
+  arg,
+  asymetricBorderedPart,
+  borderedpart,
+  noCapture,
+  optional,
+  orParts,
 } from "../match/utils/util.ts";
 
 const nc = noCapture;
 
-const len = optional("LEN_");
-const not = optional("N", false);
-const eq = optional("E", false);
-
-// Creates a regex pattern part for a given key and options
-/**
- * Creates a regex pattern part for a given key and options
- *
- * @param opts - Specific options to include in the pattern
- * @param key - The key to create
- * @returns The formatted key.
- */
-const formatKey = (
-	opts: Partial<{
-		len: boolean;
-		not: boolean;
-		eq: boolean;
-	}>,
-	key: string,
-) => {
-	const { len: inc_len = true, not: inc_not = true, eq: inc_eq = true } = opts;
-	const out = [];
-
-	if (inc_len) out.push(len);
-	if (inc_not) out.push(not);
-	out.push(key);
-	if (inc_eq) out.push(eq);
-	return out.join("");
-};
-
 // Pattern part for the function parameters
 const params = optional(
-	asymetricBorderedPart(["(", ")"], true, "params"),
-	false,
+  asymetricBorderedPart(["(", ")"], true, "params"),
+  // false,
 );
 
 // Pattern part for the case keys (.e.g. GT, LT, EQ, etc.)
-const keys = arg("case_key", "[\\w\\d-]+");
+const keys = arg("case_key", "[\\w\\d-]+?");
 
 // Pattern part for the content enclosed in quotes, backticks, pipes, square braces, or squiggly brackets
 const content_reg = arg(
-	"content",
-	...orParts(
-		[
-			borderedpart('"'),
-			borderedpart("`"),
-			borderedpart("'"),
-			borderedpart("|"),
-			asymetricBorderedPart(["{", "}"]),
-			asymetricBorderedPart(["[", "]"]),
-		],
-		false,
-	),
+  "content",
+  ...orParts([
+    borderedpart('"'),
+    borderedpart("`"),
+    borderedpart("'"),
+    borderedpart("|"),
+    asymetricBorderedPart(["{", "}"]),
+    asymetricBorderedPart(["[", "]"]),
+  ]),
 );
 
 /**
@@ -95,7 +62,9 @@ const content_reg = arg(
  * | LEN_AND          | AND               |
  * | LEN_CUSTOM       | CUSTOM            |
  */
-export const DYN_CASEKEY_REGEX = makeRegex(
-	[nc(keys, params, _sep, content_reg)],
-	"gs",
+const DYN_CASEKEY_REGEX = makeRegex(
+  [nc(keys, params, _sep, content_reg)],
+  "gs",
 );
+
+export { DYN_CASEKEY_REGEX };

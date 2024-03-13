@@ -1,7 +1,5 @@
-import { strictRegex, _sep } from "../utils/common.ts";
-import { optional } from "../utils/util.ts";
-import { noCapture } from "../utils/util.ts";
-import { orParts } from "../utils/util.ts";
+import { _sep, strictRegex } from "../utils/common.ts";
+import { noCapture, optional, orParts } from "../utils/util.ts";
 
 // A RegExp part that represents the type key type of a number
 const key = "(?:(?:num(?:ber)?)|(?:(?:big_)?int(?:eger)?)|(?:float)|(?:hex))";
@@ -19,4 +17,4 @@ const strict_form = strictRegex([...base, `(?<arg>${inner})`]);
 
 const REG_NUM_LOOSE_STR = [...base, `(?:${inner})`].join("");
 
-export { strict_form as strict_form_num, REG_NUM_LOOSE_STR };
+export { REG_NUM_LOOSE_STR, strict_form as strict_form_num };

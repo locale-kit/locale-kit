@@ -1,7 +1,7 @@
 import {
-	assertEquals,
-	assertObjectMatch,
-	assertArrayIncludes,
+  assertArrayIncludes,
+  assertEquals,
+  assertObjectMatch,
 } from "https://deno.land/std@0.218.2/assert/mod.ts";
 
-export { assertEquals, assertObjectMatch, assertArrayIncludes };
+export { assertArrayIncludes, assertEquals, assertObjectMatch };

@@ -1,5 +1,5 @@
-import { strictRegex, _sep } from "../utils/common.ts";
-import { orParts, arg, noCapture } from "../utils/util.ts";
+import { _sep, strictRegex } from "../utils/common.ts";
+import { arg, noCapture, orParts } from "../utils/util.ts";
 
 // A RegExp part that represents the type key type of a number
 const key = "bool(?:ean)?";
@@ -17,4 +17,4 @@ const strict_form = strictRegex([...base, arg("arg", ...inner)]);
 
 const REG_BOOL_LOOSE_STR = [...base, noCapture(...inner)].join("");
 
-export { strict_form as strict_form_bool, REG_BOOL_LOOSE_STR };
+export { REG_BOOL_LOOSE_STR, strict_form as strict_form_bool };

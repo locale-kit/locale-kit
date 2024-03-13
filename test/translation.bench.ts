@@ -34,27 +34,27 @@ const demo_language = {
 			title: "Dynamic title",
 			subtitle: "Dynamic subtitle",
 			with_substitution:
-				"This is a demo showing the various dynamic replacement options: {{val}}",
+				"This is a demo showing the various dynamic replacement options: {{key:'val'}}",
 			with_localisation_and_substitution: `This is a demo showing the various dynamic replacement options: [[~
         {val}
-        EQ(num: 0): ;:Equals zero {{val}}:;
-        | LT(num: 0): ;:Less than zero {{val}}:;
-        | LTE(num: 2): ;:Less than or equal to 2 {{val}}:;
-        | BT(num: 2, num: 5): ;:Between 2 and 5 {{val}}:;
-        | IN(key: {arr}): ;:In array [6, 7, 8, 9, 10] {{val}}:;
-        | GT(num: 20): ;:Greater than 20 {{val}}:;
-        | default: ;:Default {{val}}:;
-      ]]`,
+        EQ(num: 0): 'Equals zero {{key:'val'}}'
+        | LT(num: 0): 'Less than zero {{key:'val'}}'
+        | LTE(num: 2): 'Less than or equal to 2 {{key:'val'}}'
+        | BT(num: 2, num: 5): 'Between 2 and 5 {{key:'val'}}'
+        | IN(key: {arr}): 'In array [6, 7, 8, 9, 10] {{key:'val'}}'
+        | GT(num: 20): 'Greater than 20 {{key:'val'}}'
+        | default: 'Default {{key:'val'}}'
+      ~]]`,
 			with_localisation: `This is a demo showing the various dynamic replacement options: [[~
         {val}
-        EQ(num: 0): ;:Equals zero:;
-        | LT(num: 0): ;:Less than zero:;
-        | LTE(num: 2): ;:Less than or equal to 2:;
-        | BT(num: 2, num: 5): ;:Between 2 and 5:;
-        | IN(key: {arr}): ;:In array [6, 7, 8, 9, 10]:;
-        | GT(num: 20): ;:Greater than 20:;
-        | default: ;:Default:;
-      ]]`,
+        EQ(num: 0): 'Equals zero'
+        | LT(num: 0): 'Less than zero'
+        | LTE(num: 2): 'Less than or equal to 2'
+        | BT(num: 2, num: 5): 'Between 2 and 5'
+        | IN(key: {arr}): 'In array [6, 7, 8, 9, 10]'
+        | GT(num: 20): 'Greater than 20'
+        | default: 'Default'
+      ~]]`,
 		},
 	},
 };

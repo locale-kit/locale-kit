@@ -1,4 +1,9 @@
-import { orParts, borderedpart, asymetricBorderedPart } from "./util.ts";
+import {
+	asymetricBorderedPart,
+	borderedpart,
+	optional,
+	orParts,
+} from "./util.ts";
 
 /**
  * Represents a collection of loose forms for matching strings.
@@ -9,6 +14,9 @@ type LooseForms = {
 	single_quote: string[];
 	double_quote: string[];
 	pipe: string[];
+	curly: string[];
+	round: string[];
+	square: string[];
 	all: string[];
 };
 
@@ -21,6 +29,9 @@ type StrictForms = {
 	single_quote: RegExp;
 	double_quote: RegExp;
 	pipe: RegExp;
+	curly: RegExp;
+	round: RegExp;
+	square: RegExp;
 	all: RegExp;
 };
 
@@ -87,6 +98,24 @@ function formLooseBordered(key: string, parts: string[] = []): LooseForms {
 		single_quote: [key, _sep, ...parts, borderedpart("'", true)],
 		double_quote: [key, _sep, ...parts, borderedpart('"', true)],
 		pipe: [key, _sep, ...parts, borderedpart("|", true)],
+		curly: [
+			key,
+			_sep,
+			...parts,
+			optional(asymetricBorderedPart(["{", "}"], true)),
+		],
+		round: [
+			key,
+			_sep,
+			...parts,
+			optional(asymetricBorderedPart(["(", ")"], true)),
+		],
+		square: [
+			key,
+			_sep,
+			...parts,
+			optional(asymetricBorderedPart(["[", "]"], true)),
+		],
 		all: [
 			key,
 			_sep,
@@ -97,6 +126,9 @@ function formLooseBordered(key: string, parts: string[] = []): LooseForms {
 					borderedpart("`"),
 					borderedpart('"'),
 					borderedpart("|"),
+					asymetricBorderedPart(["(", ")"]),
+					asymetricBorderedPart(["{", "}"]),
+					asymetricBorderedPart(["[", "]"]),
 				],
 				false,
 			),
@@ -116,6 +148,9 @@ function formStrictForms(loose_forms: LooseForms): StrictForms {
 		single_quote: strictRegex(loose_forms.single_quote),
 		double_quote: strictRegex(loose_forms.double_quote),
 		pipe: strictRegex(loose_forms.pipe),
+		curly: strictRegex(loose_forms.curly),
+		round: strictRegex(loose_forms.round),
+		square: strictRegex(loose_forms.square),
 		all: strictRegex(loose_forms.all),
 	};
 }
@@ -201,36 +236,55 @@ function unescapeStringBorder(source: string, border: string): string {
  * @param strict - The strict forms object containing regular expressions for different border types.
  * @returns The bordered argument, or an empty string if the argument cannot be extracted.
  */
-const getBorderedArgument = (str: string, strict: StrictForms) => {
+const getBorderedArgument = (
+	str: string,
+	strict: StrictForms,
+	manual_border?: string,
+) => {
+	let param_str = str;
 	// Make sure a string was passed in
-	if (!str || typeof str !== "string") return "";
+	if (!param_str || typeof param_str !== "string") return "";
 
 	// Trim the string and make sure the result isn't empty
-	const trimmed = str.trim();
-	if (trimmed === "") return "";
+	param_str = str.trim();
+	if (param_str === "") return "";
 
 	// Make sure the string matches the pattern
-	if (!strict.all.test(trimmed)) return "";
+	if (!strict.all.test(param_str)) return "";
 
-	let border = "";
+	let border = manual_border || "";
 	// Check which character is used to enclose the string
-	for (let i = 3; i < trimmed.length; i++) {
-		const char = trimmed[i];
-		if (char === '"') {
-			border = '"';
-			break;
-		}
-		if (char === "'") {
-			border = "'";
-			break;
-		}
-		if (char === "`") {
-			border = "`";
-			break;
-		}
-		if (char === "|") {
-			border = "|";
-			break;
+	if (border === "") {
+		for (let i = 3; i < param_str.length; i++) {
+			const char = param_str[i];
+			if (char === '"') {
+				border = '"';
+				break;
+			}
+			if (char === "'") {
+				border = "'";
+				break;
+			}
+			if (char === "`") {
+				border = "`";
+				break;
+			}
+			if (char === "|") {
+				border = "|";
+				break;
+			}
+			if (char === "(") {
+				border = ")";
+				break;
+			}
+			if (char === "{") {
+				border = "}";
+				break;
+			}
+			if (char === "[") {
+				border = "]";
+				break;
+			}
 		}
 	}
 
@@ -250,11 +304,20 @@ const getBorderedArgument = (str: string, strict: StrictForms) => {
 		case "|":
 			fn = strict.pipe;
 			break;
+		case ")":
+			fn = strict.round;
+			break;
+		case "}":
+			fn = strict.curly;
+			break;
+		case "]":
+			fn = strict.square;
+			break;
 		default:
 			return "";
 	}
 
-	const match = trimmed.match(fn);
+	const match = param_str.match(fn);
 
 	if (!match?.groups?.arg) return "";
 
@@ -265,10 +328,11 @@ export {
 	_s,
 	_sep,
 	bit_of_anything,
-	makeRegex,
-	strictRegex,
 	formLooseBordered,
 	formStrictForms,
 	getBorderedArgument,
+	makeRegex,
+	strictRegex,
+	unescapeStringBorder,
 };
 export type { LooseForms, StrictForms };
