@@ -1,7 +1,7 @@
 import { assertArrayIncludes, assertObjectMatch } from "./_test.ts";
 import { LocaleKit } from "../mod.ts";
 import { assertEquals } from "./_test.ts";
-import { FuncObj } from "../types/fn.ts";
+import type { FuncObj } from "../types/fn.ts";
 
 Deno.test("allSupported method returns an array of supported languages", () => {
   const localeKit = new LocaleKit({ languages: { en: {}, es: {} } });
