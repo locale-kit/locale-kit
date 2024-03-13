@@ -1,8 +1,8 @@
 import {
-	asymetricBorderedPart,
-	borderedpart,
-	optional,
-	orParts,
+  asymetricBorderedPart,
+  borderedpart,
+  optional,
+  orParts,
 } from "./util.ts";
 
 /**
@@ -10,14 +10,14 @@ import {
  * By loose, we mean that they don't have to match from the start to the end of the entire string.
  */
 type LooseForms = {
-	backtick: string[];
-	single_quote: string[];
-	double_quote: string[];
-	pipe: string[];
-	curly: string[];
-	round: string[];
-	square: string[];
-	all: string[];
+  backtick: string[];
+  single_quote: string[];
+  double_quote: string[];
+  pipe: string[];
+  curly: string[];
+  round: string[];
+  square: string[];
+  all: string[];
 };
 
 /**
@@ -25,14 +25,14 @@ type LooseForms = {
  * By strict, we mean that the entire string must match the regular expression.
  */
 type StrictForms = {
-	backtick: RegExp;
-	single_quote: RegExp;
-	double_quote: RegExp;
-	pipe: RegExp;
-	curly: RegExp;
-	round: RegExp;
-	square: RegExp;
-	all: RegExp;
+  backtick: RegExp;
+  single_quote: RegExp;
+  double_quote: RegExp;
+  pipe: RegExp;
+  curly: RegExp;
+  round: RegExp;
+  square: RegExp;
+  all: RegExp;
 };
 
 /**
@@ -73,7 +73,7 @@ const bit_of_anything = `${orParts([".", "[\\s]"]).join("")}+?`;
  * @returns A regular expression object.
  */
 const makeRegex = (parts: string[], opts?: string) =>
-	new RegExp(parts.join(""), opts);
+  new RegExp(parts.join(""), opts);
 
 /**
  * Creates a strict regular expression by concatenating the given parts with "^" at the beginning and "$" at the end.
@@ -82,7 +82,7 @@ const makeRegex = (parts: string[], opts?: string) =>
  * @returns A regular expression object.
  */
 function strictRegex(parts: string[], opts?: string): RegExp {
-	return makeRegex(["^", ...parts, "$"], opts);
+  return makeRegex(["^", ...parts, "$"], opts);
 }
 
 /**
@@ -93,47 +93,47 @@ function strictRegex(parts: string[], opts?: string): RegExp {
  * @see {@link LooseForms}
  */
 function formLooseBordered(key: string, parts: string[] = []): LooseForms {
-	return {
-		backtick: [key, _sep, ...parts, borderedpart("`", true)],
-		single_quote: [key, _sep, ...parts, borderedpart("'", true)],
-		double_quote: [key, _sep, ...parts, borderedpart('"', true)],
-		pipe: [key, _sep, ...parts, borderedpart("|", true)],
-		curly: [
-			key,
-			_sep,
-			...parts,
-			optional(asymetricBorderedPart(["{", "}"], true)),
-		],
-		round: [
-			key,
-			_sep,
-			...parts,
-			optional(asymetricBorderedPart(["(", ")"], true)),
-		],
-		square: [
-			key,
-			_sep,
-			...parts,
-			optional(asymetricBorderedPart(["[", "]"], true)),
-		],
-		all: [
-			key,
-			_sep,
-			...parts,
-			...orParts(
-				[
-					borderedpart("'"),
-					borderedpart("`"),
-					borderedpart('"'),
-					borderedpart("|"),
-					asymetricBorderedPart(["(", ")"]),
-					asymetricBorderedPart(["{", "}"]),
-					asymetricBorderedPart(["[", "]"]),
-				],
-				false,
-			),
-		],
-	};
+  return {
+    backtick: [key, _sep, ...parts, borderedpart("`", true)],
+    single_quote: [key, _sep, ...parts, borderedpart("'", true)],
+    double_quote: [key, _sep, ...parts, borderedpart('"', true)],
+    pipe: [key, _sep, ...parts, borderedpart("|", true)],
+    curly: [
+      key,
+      _sep,
+      ...parts,
+      optional(asymetricBorderedPart(["{", "}"], true)),
+    ],
+    round: [
+      key,
+      _sep,
+      ...parts,
+      optional(asymetricBorderedPart(["(", ")"], true)),
+    ],
+    square: [
+      key,
+      _sep,
+      ...parts,
+      optional(asymetricBorderedPart(["[", "]"], true)),
+    ],
+    all: [
+      key,
+      _sep,
+      ...parts,
+      ...orParts(
+        [
+          borderedpart("'"),
+          borderedpart("`"),
+          borderedpart('"'),
+          borderedpart("|"),
+          asymetricBorderedPart(["(", ")"]),
+          asymetricBorderedPart(["{", "}"]),
+          asymetricBorderedPart(["[", "]"]),
+        ],
+        false,
+      ),
+    ],
+  };
 }
 
 /**
@@ -143,16 +143,16 @@ function formLooseBordered(key: string, parts: string[] = []): LooseForms {
  * @see {@link StrictForms}
  */
 function formStrictForms(loose_forms: LooseForms): StrictForms {
-	return {
-		backtick: strictRegex(loose_forms.backtick),
-		single_quote: strictRegex(loose_forms.single_quote),
-		double_quote: strictRegex(loose_forms.double_quote),
-		pipe: strictRegex(loose_forms.pipe),
-		curly: strictRegex(loose_forms.curly),
-		round: strictRegex(loose_forms.round),
-		square: strictRegex(loose_forms.square),
-		all: strictRegex(loose_forms.all),
-	};
+  return {
+    backtick: strictRegex(loose_forms.backtick),
+    single_quote: strictRegex(loose_forms.single_quote),
+    double_quote: strictRegex(loose_forms.double_quote),
+    pipe: strictRegex(loose_forms.pipe),
+    curly: strictRegex(loose_forms.curly),
+    round: strictRegex(loose_forms.round),
+    square: strictRegex(loose_forms.square),
+    all: strictRegex(loose_forms.all),
+  };
 }
 
 /**
@@ -163,70 +163,68 @@ function formStrictForms(loose_forms: LooseForms): StrictForms {
  * @returns The unescaped string.
  */
 function unescapeStringBorder(source: string, border: string): string {
-	let str_len = source.length;
-	let escape_char_index = -1;
-	let output = source;
+  let str_len = source.length;
+  let escape_char_index = -1;
+  let output = source;
 
-	let i = -1;
-	while (true) {
-		if (i++ >= str_len) break;
+  let i = -1;
+  while (true) {
+    if (i++ >= str_len) break;
 
-		const char = output[i];
+    const char = output[i];
 
-		if (char === bs) {
-			// If we're at the end of the string and the escape character index is set,
-			// remove half of the backslashes. This can only be even due to the regex used
-			// before this function is called, so we don't need to worry about maybe letting
-			// a border character remain or not
-			if (i === str_len - 1 && escape_char_index !== -1) {
-				const half_count = halfFloor(i + 1 - escape_char_index);
+    if (char === bs) {
+      // If we're at the end of the string and the escape character index is set,
+      // remove half of the backslashes. This can only be even due to the regex used
+      // before this function is called, so we don't need to worry about maybe letting
+      // a border character remain or not
+      if (i === str_len - 1 && escape_char_index !== -1) {
+        const half_count = halfFloor(i + 1 - escape_char_index);
 
-				output =
-					output.substring(0, escape_char_index) +
-					repeatBS(half_count) +
-					output.substring(i + 1);
-				break;
-			}
+        output = output.substring(0, escape_char_index) +
+          repeatBS(half_count) +
+          output.substring(i + 1);
+        break;
+      }
 
-			if (escape_char_index === -1) {
-				// If the current character is a backslash, and the escape character index
-				// is not set, set it to the current index
-				escape_char_index = i;
-			}
+      if (escape_char_index === -1) {
+        // If the current character is a backslash, and the escape character index
+        // is not set, set it to the current index
+        escape_char_index = i;
+      }
 
-			continue;
-		}
+      continue;
+    }
 
-		if (char === border) {
-			// If the index of the first backslash and now is odd, remove half of the
-			// backslashes (rounding down) and keep the border character
-			// We'll need to change the current index to the end of the affected area,
-			// and change the str_len to the new length of the string which we can do by
-			// just subtracting the number of characters removed from the total length
-			// instead of recalculating the length of the string
-			if (escape_char_index !== -1) {
-				const count = i - escape_char_index;
-				const half_count = halfFloor(count);
-				const is_even = count % 2 === 0 ? 1 : 0;
-				const c = is_even + 1;
+    if (char === border) {
+      // If the index of the first backslash and now is odd, remove half of the
+      // backslashes (rounding down) and keep the border character
+      // We'll need to change the current index to the end of the affected area,
+      // and change the str_len to the new length of the string which we can do by
+      // just subtracting the number of characters removed from the total length
+      // instead of recalculating the length of the string
+      if (escape_char_index !== -1) {
+        const count = i - escape_char_index;
+        const half_count = halfFloor(count);
+        const is_even = count % 2 === 0 ? 1 : 0;
+        const c = is_even + 1;
 
-				output =
-					output.substring(0, escape_char_index) +
-					repeatBS(half_count) +
-					output.substring(i + is_even);
+        output = output.substring(0, escape_char_index) +
+          repeatBS(half_count) +
+          output.substring(i + is_even);
 
-				i -= count - half_count + c;
-				str_len -= count - half_count + c;
-				escape_char_index = -1;
-			}
-		}
+        i -= count - half_count + c;
+        str_len -= count - half_count + c;
+        escape_char_index = -1;
+      }
+    }
 
-		if (escape_char_index !== -1) {
-			escape_char_index = -1;
-		}
-	}
+    if (escape_char_index !== -1) {
+      escape_char_index = -1;
+    }
+  }
 
-	return output;
+  return output;
 }
 
 /**
@@ -237,102 +235,102 @@ function unescapeStringBorder(source: string, border: string): string {
  * @returns The bordered argument, or an empty string if the argument cannot be extracted.
  */
 const getBorderedArgument = (
-	str: string,
-	strict: StrictForms,
-	manual_border?: string,
+  str: string,
+  strict: StrictForms,
+  manual_border?: string,
 ) => {
-	let param_str = str;
-	// Make sure a string was passed in
-	if (!param_str || typeof param_str !== "string") return "";
+  let param_str = str;
+  // Make sure a string was passed in
+  if (!param_str || typeof param_str !== "string") return "";
 
-	// Trim the string and make sure the result isn't empty
-	param_str = str.trim();
-	if (param_str === "") return "";
+  // Trim the string and make sure the result isn't empty
+  param_str = str.trim();
+  if (param_str === "") return "";
 
-	// Make sure the string matches the pattern
-	if (!strict.all.test(param_str)) return "";
+  // Make sure the string matches the pattern
+  if (!strict.all.test(param_str)) return "";
 
-	let border = manual_border || "";
-	// Check which character is used to enclose the string
-	if (border === "") {
-		for (let i = 3; i < param_str.length; i++) {
-			const char = param_str[i];
-			if (char === '"') {
-				border = '"';
-				break;
-			}
-			if (char === "'") {
-				border = "'";
-				break;
-			}
-			if (char === "`") {
-				border = "`";
-				break;
-			}
-			if (char === "|") {
-				border = "|";
-				break;
-			}
-			if (char === "(") {
-				border = ")";
-				break;
-			}
-			if (char === "{") {
-				border = "}";
-				break;
-			}
-			if (char === "[") {
-				border = "]";
-				break;
-			}
-		}
-	}
+  let border = manual_border || "";
+  // Check which character is used to enclose the string
+  if (border === "") {
+    for (let i = 3; i < param_str.length; i++) {
+      const char = param_str[i];
+      if (char === '"') {
+        border = '"';
+        break;
+      }
+      if (char === "'") {
+        border = "'";
+        break;
+      }
+      if (char === "`") {
+        border = "`";
+        break;
+      }
+      if (char === "|") {
+        border = "|";
+        break;
+      }
+      if (char === "(") {
+        border = ")";
+        break;
+      }
+      if (char === "{") {
+        border = "}";
+        break;
+      }
+      if (char === "[") {
+        border = "]";
+        break;
+      }
+    }
+  }
 
-	if (border === "") return "";
+  if (border === "") return "";
 
-	let fn: RegExp;
-	switch (border) {
-		case "`":
-			fn = strict.backtick;
-			break;
-		case "'":
-			fn = strict.single_quote;
-			break;
-		case '"':
-			fn = strict.double_quote;
-			break;
-		case "|":
-			fn = strict.pipe;
-			break;
-		case ")":
-			fn = strict.round;
-			break;
-		case "}":
-			fn = strict.curly;
-			break;
-		case "]":
-			fn = strict.square;
-			break;
-		default:
-			return "";
-	}
+  let fn: RegExp;
+  switch (border) {
+    case "`":
+      fn = strict.backtick;
+      break;
+    case "'":
+      fn = strict.single_quote;
+      break;
+    case '"':
+      fn = strict.double_quote;
+      break;
+    case "|":
+      fn = strict.pipe;
+      break;
+    case ")":
+      fn = strict.round;
+      break;
+    case "}":
+      fn = strict.curly;
+      break;
+    case "]":
+      fn = strict.square;
+      break;
+    default:
+      return "";
+  }
 
-	const match = param_str.match(fn);
+  const match = param_str.match(fn);
 
-	if (!match?.groups?.arg) return "";
+  if (!match?.groups?.arg) return "";
 
-	return unescapeStringBorder(match.groups.arg, border);
+  return unescapeStringBorder(match.groups.arg, border);
 };
 
 export {
-	_s,
-	_sep,
-	bit_of_anything,
-	formLooseBordered,
-	formStrictForms,
-	getBorderedArgument,
-	makeRegex,
-	strictRegex,
-	unescapeStringBorder,
+  _s,
+  _sep,
+  bit_of_anything,
+  formLooseBordered,
+  formStrictForms,
+  getBorderedArgument,
+  makeRegex,
+  strictRegex,
+  unescapeStringBorder,
 };
 export type { LooseForms, StrictForms };
