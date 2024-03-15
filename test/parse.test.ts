@@ -7,13 +7,13 @@ Deno.test("getArgTypes with empty string", () => {
 });
 
 Deno.test("getArgTypes with string argument", () => {
-	const result = getArgTypes("str:Hello");
-	assertArrayIncludes(result, [["str", "str:Hello"]]);
+	const result = getArgTypes("str:'Hello'");
+	assertArrayIncludes(result, [["str", "str:'Hello'"]]);
 });
 
 Deno.test("getArgTypes with key argument", () => {
-	const result = getArgTypes("key:example_key");
-	assertArrayIncludes(result, [["key", "key:example_key"]]);
+	const result = getArgTypes("key:'example_key'");
+	assertArrayIncludes(result, [["key", "key:'example_key'"]]);
 });
 
 Deno.test("getArgTypes with bool argument", () => {
@@ -26,7 +26,7 @@ Deno.test("getArgTypes with num argument", () => {
 	assertArrayIncludes(result, [["num", "num:42"]]);
 });
 
-Deno.test.only("getArgTypes with func argument", () => {
+Deno.test("getArgTypes with func argument", () => {
 	const result = getArgTypes("func: {example_function}");
 	assertArrayIncludes(result, [["fun", "func: {example_function}"]]);
 });

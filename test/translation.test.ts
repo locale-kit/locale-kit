@@ -555,7 +555,7 @@ Deno.test({ name: "Translate a key and handle function calls" }, () => {
 });
 
 // Create a test for when a case has a function argument
-Deno.test.only(
+Deno.test(
 	{
 		name: "Translate a key and handle function calls that have function parameters",
 	},

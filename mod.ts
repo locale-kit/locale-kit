@@ -196,7 +196,5 @@ class LocaleKit {
 	}
 }
 
-const parseString = format;
-
-export { LocaleKit, parseString };
+export { LocaleKit, format as parseString };
 export type { FuncArgsType, FuncObj, FuncType };
