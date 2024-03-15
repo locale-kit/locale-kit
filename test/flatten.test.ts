@@ -1,8 +1,5 @@
-import {
-	assertEquals,
-	assertObjectMatch,
-} from "https://deno.land/std@0.218.2/assert/mod.ts";
 import { Flattened } from "../util/flatten.ts";
+import { assertEquals, assertObjectMatch } from "./_test.ts";
 
 Deno.test("toObject method returns the unflattened object", () => {
 	const flattened = Flattened.toFlattened({
@@ -275,11 +272,11 @@ Deno.test(
 Deno.test(
 	"Flattened class detects and handles circular references correctly",
 	() => {
-		const obj: Record<string, unknown> = {
+		const obj = {
 			some: { nested: { property: "value" } },
 		};
 
-		// @ts-ignore
+		// @ts-ignore - Purely here for testing circular references
 		obj.some.nested.circular = obj.some;
 
 		const flattened = Flattened.toFlattened(obj);
@@ -297,7 +294,7 @@ Deno.test(
 		assertObjectMatch(flattened.__data, expected_data);
 		assertObjectMatch(flattened.__map, expected_map);
 		assertObjectMatch(unflattened, obj);
-		// @ts-ignore
+		// @ts-ignore - Purely here for testing circular references
 		assertEquals(unflattened.some.nested.circular, unflattened.some);
 	},
 );

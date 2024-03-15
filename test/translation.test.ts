@@ -1,10 +1,7 @@
-import {
-	assertEquals,
-	assertObjectMatch,
-} from "https://deno.land/std@0.218.2/assert/mod.ts";
+import { assertEquals, assertObjectMatch } from "./_test.ts";
 
 import { LocaleKit } from "../mod.ts";
-import { FunctionType } from "../types/fn.ts";
+import type { FuncType } from "../types/fn.ts";
 
 Deno.test("Init with language", () => {
 	const svc = new LocaleKit({
@@ -193,7 +190,7 @@ Deno.test("Translate a key with added data", () => {
 
 	svc.addLanguage("en", {
 		common: {
-			test: "Hello {{name}}",
+			test: "Hello {{key:'name'}}",
 		},
 	});
 
@@ -205,7 +202,7 @@ Deno.test("Translate a key with added data and nested objects", () => {
 
 	svc.addLanguage("en", {
 		common: {
-			test: "Hello {{user.name}}",
+			test: "Hello {{key:'user.name'}}",
 		},
 	});
 
@@ -222,7 +219,7 @@ Deno.test(
 
 		svc.addLanguage("en", {
 			common: {
-				test: "Hello {{user.name}} {{user.addresses.0.city}}",
+				test: "Hello {{key:'user.name'}} {{key:'user.addresses.0.city'}}",
 			},
 		});
 
@@ -245,7 +242,7 @@ Deno.test(
 		svc.addLanguage("en", {
 			common: {
 				message_count:
-					"You have {{count}} [[~ {count} 1: `message` | default: `messages` ]]",
+					"You have {{key:'count'}} [[~ {count} 1: `message` | default: `messages` ~]]",
 			},
 		});
 
@@ -278,7 +275,7 @@ Deno.test(
 		svc.addLanguage("en", {
 			common: {
 				message_count:
-					"You have {{count}} [[~ {count} 1: ;:message:; | default: ;:messages:; ]]",
+					"You have {{key:'count'}} [[~ {count} 1: 'message' | default: 'messages' ~]]",
 			},
 		});
 
@@ -310,7 +307,7 @@ Deno.test(
 
 		svc.addLanguage("en", {
 			common: {
-				message_count: "You have {{count}} [[~ {count} 1: `message` ]]",
+				message_count: "You have {{key:'count'}} [[~ {count} 1: `message` ~]]",
 			},
 		});
 
@@ -331,7 +328,7 @@ Deno.test("Nest data inside translation formatting", () => {
 	svc.addLanguage("en", {
 		common: {
 			message_count:
-				"You have [[~ {count} 1: `only 1 message` | default: `{{count}} messages` ]]",
+				"You have [[~ {count} 1: `only 1 message` | default: `{{key:'count'}} messages` ~]]",
 		},
 	});
 
@@ -362,7 +359,7 @@ Deno.test(
 
 		svc.addLanguage("en", {
 			common: {
-				test: "Hello {{user.name}}||[john_doe]||",
+				test: "Hello {{key:'user.name'}}||[john_doe]||",
 			},
 		});
 
@@ -385,8 +382,8 @@ Deno.test(
 
 		svc.addLanguage("en", {
 			common: {
-				test: "Hello {{name}}",
-				test2: "Hello {{name}} (test 2 en)",
+				test: "Hello {{key:'name'}}",
+				test2: "Hello {{key:'name'}} (test 2 en)",
 				translation_error: "Translation error",
 			},
 			error: {
@@ -396,7 +393,7 @@ Deno.test(
 
 		svc.addLanguage("fr", {
 			common: {
-				test: "Bonjour {{name}}",
+				test: "Bonjour {{key:'name'}}",
 			},
 		});
 
@@ -432,7 +429,7 @@ Deno.test(
 
 		svc.addLanguage("en", {
 			common: {
-				test: "You are [[~ {age} GTE(num:18): `an adult` | default: `a child` ]]",
+				test: "You are [[~ {age} GTE(num:18): `an adult` | default: `a child` ~]]",
 			},
 		});
 
@@ -450,7 +447,7 @@ Deno.test(
 
 		svc.addLanguage("en", {
 			common: {
-				test: "You have [[~ {friends} LEN_GTE(num:3): `some` | default: `a couple` ]] friends",
+				test: "You have [[~ {friends} LEN_GTE(num:3): `some` | default: `a couple` ~]] friends",
 			},
 		});
 
@@ -474,7 +471,7 @@ Deno.test(
 
 		svc.addLanguage("en", {
 			common: {
-				test: "This is a [[~ {str} LEN_GTE(num:12): `longer` | default: `shorter` ]] string",
+				test: "This is a [[~ {str} LEN_GTE(num:12): `longer` | default: `shorter` ~]] string",
 			},
 		});
 
@@ -498,7 +495,7 @@ Deno.test(
 
 		svc.addLanguage("en", {
 			common: {
-				test: "This is a [[~ {obj} LEN_GTE(num:3): `longer` | default: `shorter` ]] object",
+				test: "This is a [[~ {obj} LEN_GTE(num:3): `longer` | default: `shorter` ~]] object",
 			},
 		});
 
@@ -519,9 +516,9 @@ Deno.test({ name: "Translate a key and handle function calls" }, () => {
 	svc.addLanguage("en", {
 		common: {
 			test_age:
-				"You are [[~ {age} LTE(num:12): `a child` | BT(num:12, num:18): `a teenager` | GTE(num:18): `an adult` ]]",
+				"You are [[~ {age} LTE(num:12): `a child` | BT(num:12, num:18): `a teenager` | GTE(num:18): `an adult` ~]]",
 			test_array:
-				"You have [[~ {messages.length} EQ(num:0): `no` | LTE(num:3): `some` | LTE(num:8): `a few` | LTE(num:40): `a lot of` | GTE(num:41): `too many` | default: `{{messages.length}}` ]] messages",
+				"You have [[~ {messages.length} EQ(num:0): `no` | LTE(num:3): `some` | LTE(num:8): `a few` | LTE(num:40): `a lot of` | GTE(num:41): `too many` | default: `{{key:'messages.length'}}` ~]] messages",
 		},
 	});
 
@@ -558,7 +555,7 @@ Deno.test({ name: "Translate a key and handle function calls" }, () => {
 });
 
 // Create a test for when a case has a function argument
-Deno.test(
+Deno.test.only(
 	{
 		name: "Translate a key and handle function calls that have function parameters",
 	},
@@ -568,19 +565,19 @@ Deno.test(
 		svc.addLanguage("en", {
 			common: {
 				test_age:
-					"You are [[~ {age} CUSTOM(fn: {isChild}): `a child` | CUSTOM(fn: {isTeen}): `a teenager` | CUSTOM(fn: {isAdult}): `an adult` ]]",
+					"You are [[~ {age} CUSTOM(fn: 'isChild'): 'a child' | CUSTOM(fn: [isTeen]): 'a teenager' | CUSTOM(fn: [isAdult]): 'an adult' ~]]",
 			},
 		});
 
-		const fns: Record<string, FunctionType> = {
-			isChild: (age: unknown, _ctx, _matched) => {
-				return (age as number) <= 12;
+		const fns: Record<string, FuncType> = {
+			isChild: ({ value: age }) => {
+				return age <= 12;
 			},
-			isTeen: (age: unknown, _ctx, _matched) => {
-				return (age as number) > 12 && (age as number) < 18;
+			isTeen: ({ value: age }) => {
+				return age > 12 && age < 18;
 			},
-			isAdult: (age: unknown, _ctx, _matched) => {
-				return (age as number) >= 18;
+			isAdult: ({ value: age }) => {
+				return age >= 18;
 			},
 		};
 

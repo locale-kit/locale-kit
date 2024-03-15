@@ -1,409 +1,312 @@
-import { FunctionType } from "../types/fn.ts";
-import type { ArgType, FUNCSMapType } from "../types/format.ts";
-import { FuncParamType } from "../types/format.ts";
-import { getNestedKeyValue } from "./obj.ts";
+import type { Any } from "../types/any.ts";
+import type { FuncArgsType, FuncType } from "../types/fn.ts";
+import { getLen } from "./getLen.ts";
+import { isArray, isMap, isObject, isString } from "./is.ts";
+
+export const MAXSAFEINT = BigInt(Number.MAX_SAFE_INTEGER);
 
 /**
- * Regex to get the 1 (or 2) arguments of a function
- */
-const DYN_ARG_REGEX =
-	/(?<arg1>(?:str\s*:\s*\`(?<arg1_val_str>[^`]*)\`)|(?:key\s*:\s*(?:{\s*(?<arg1_val_key>[^{}]*?)\s*}))|(?:fn\s*:\s*(?:{\s*(?<arg1_val_fn>[^{}]*?)\s*}))|(?:num\s*:\s*(?<arg1_val_num>[0-9]+(\.[0-9]+)?))|(?:bool\s*:\s*(?<arg1_val_bool>true|false|1|0)))(?:\s*,\s*(?<arg2>(?:str\s*:\s*\`(?<arg2_val_str>[^`]*)\`)|(?:key\s*:\s*(?:{(?<arg2_val_key>.*?)}))|(?:fn\s*:\s*(?:{(?<arg2_val_fn>.*?)}))|(?:num\s*:\s*(?<arg2_val_num>[0-9]+(\.[0-9]+)?))|(?:bool\s*:\s*(?<arg2_val_bool>true|false|1|0))))?/s;
-
-const getLen = (a: ArgType): ArgType => {
-	if (typeof a === "string" || Array.isArray(a)) {
-		return a.length;
-	}
-	if (typeof a === "object") {
-		return Object.keys(a).length;
-	}
-	return Number.NaN;
-};
-
-const funcGT = (a: ArgType, b: ArgType) => a > b;
-const funcGTE = (a: ArgType, b: ArgType) => a >= b;
-const funcNGT = (a: ArgType, b: ArgType) => !funcGT(a, b);
-const funcNGTE = (a: ArgType, b: ArgType) => !funcGTE(a, b);
-const funcLT = (a: ArgType, b: ArgType) => a < b;
-const funcLTE = (a: ArgType, b: ArgType) => a <= b;
-const funcNLT = (a: ArgType, b: ArgType) => !funcLT(a, b);
-const funcNLTE = (a: ArgType, b: ArgType) => !funcLTE(a, b);
-const funcEQ = (a: ArgType | boolean, b: ArgType | boolean) => a === b;
-const funcNEQ = (a: ArgType | boolean, b: ArgType | boolean) => a !== b;
-const funcAND = (a: boolean, b: boolean) => !!a && !!b;
-const funcBT = (a: ArgType, b: ArgType, c: ArgType) =>
-	funcGT(a, b) && funcLT(a, c);
-const funcNBT = (a: ArgType, b: ArgType, c: ArgType) => !funcBT(a, b, c);
-const funcIN = (a: ArgType, b: ArgType[] | string) => b.includes(a as string);
-const funcNIN = (a: ArgType, b: ArgType[] | string) => !funcIN(a, b);
-const funcOR = (a: boolean, b: boolean) => !!a || !!b;
-const funcXOR = (a: boolean, b: boolean) => funcNEQ(!!a, !!b);
-
-const funcLEN_GT = (a: ArgType, b: ArgType) => getLen(a) > b;
-const funcLEN_GTE = (a: ArgType, b: ArgType) => getLen(a) >= b;
-const funcLEN_NGT = (a: ArgType, b: ArgType) => !funcGT(getLen(a), b);
-const funcLEN_NGTE = (a: ArgType, b: ArgType) => !funcGTE(getLen(a), b);
-const funcLEN_LT = (a: ArgType, b: ArgType) => getLen(a) < b;
-const funcLEN_LTE = (a: ArgType, b: ArgType) => getLen(a) <= b;
-const funcLEN_NLT = (a: ArgType, b: ArgType) => !funcLT(getLen(a), b);
-const funcLEN_NLTE = (a: ArgType, b: ArgType) => !funcLTE(getLen(a), b);
-const funcLEN_EQ = (a: ArgType | boolean, b: ArgType | boolean) =>
-	getLen(a as ArgType) === b;
-const funcLEN_NEQ = (a: ArgType | boolean, b: ArgType | boolean) =>
-	getLen(a as ArgType) !== b;
-const funcLEN_BT = (a: ArgType, b: ArgType, c: ArgType) =>
-	funcGT(getLen(a), b) && funcLT(getLen(a), c);
-const funcLEN_NBT = (a: ArgType, b: ArgType, c: ArgType) =>
-	!funcBT(getLen(a), b, c);
-const funcLEN_IN = (a: ArgType, b: ArgType[] | string) =>
-	b.includes(getLen(a) as string);
-const funcLEN_NIN = (a: ArgType, b: ArgType[] | string) =>
-	!funcIN(getLen(a), b);
-const funcCUSTOM = (a: ArgType, fn: (a: ArgType) => boolean) => fn(a);
-
-export const FUNCS: FUNCSMapType = {
-	// GT functions
-	GT: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcGT,
-	},
-	GTE: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcGTE,
-	},
-	NGT: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcNGT,
-	},
-	NGTE: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcNGTE,
-	},
-	LEN_GT: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLEN_GT,
-	},
-	LEN_GTE: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLEN_GTE,
-	},
-	LEN_NGT: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLEN_NGT,
-	},
-	LEN_NGTE: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLEN_NGTE,
-	},
-
-	LT: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLT,
-	},
-	LTE: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLTE,
-	},
-	NLT: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcNLT,
-	},
-	NLTE: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcNLTE,
-	},
-	LEN_LT: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLEN_LT,
-	},
-	LEN_LTE: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLEN_LTE,
-	},
-	LEN_NLT: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLEN_NLT,
-	},
-	LEN_NLTE: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key"]],
-		func: funcLEN_NLTE,
-	},
-
-	EQ: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key", "bool"]],
-		func: funcEQ,
-	},
-	NEQ: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key", "bool"]],
-		func: funcNEQ,
-	},
-	LEN_EQ: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key", "bool"]],
-		func: funcLEN_EQ,
-	},
-	LEN_NEQ: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key", "bool"]],
-		func: funcLEN_NEQ,
-	},
-
-	BT: {
-		arg_count: 2,
-		arg_types: [
-			["num", "str", "key"],
-			["num", "str", "key"],
-		],
-		func: funcBT,
-	},
-	NBT: {
-		arg_count: 2,
-		arg_types: [
-			["num", "str", "key"],
-			["num", "str", "key"],
-		],
-		func: funcNBT,
-	},
-	LEN_BT: {
-		arg_count: 2,
-		arg_types: [
-			["num", "str", "key"],
-			["num", "str", "key"],
-		],
-		func: funcLEN_BT,
-	},
-	LEN_NBT: {
-		arg_count: 2,
-		arg_types: [
-			["num", "str", "key"],
-			["num", "str", "key"],
-		],
-		func: funcLEN_NBT,
-	},
-
-	IN: {
-		arg_count: 1,
-		arg_types: [["key"]],
-		func: funcIN,
-	},
-	NIN: {
-		arg_count: 1,
-		arg_types: [["key"]],
-		func: funcNIN,
-	},
-	LEN_IN: {
-		arg_count: 1,
-		arg_types: [["key"]],
-		func: funcLEN_IN,
-	},
-	LEN_NIN: {
-		arg_count: 1,
-		arg_types: [["key"]],
-		func: funcLEN_NIN,
-	},
-
-	AND: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key", "bool"]],
-		func: funcAND,
-	},
-	OR: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key", "bool"]],
-		func: funcOR,
-	},
-	XOR: {
-		arg_count: 1,
-		arg_types: [["num", "str", "key", "bool"]],
-		func: funcXOR,
-	},
-	CUSTOM: {
-		arg_count: 1,
-		arg_types: [["fn"]],
-		func: funcCUSTOM,
-	},
-};
-export const FUNC_NAMES = Object.keys(FUNCS);
-
-/**
- * Retrieves the parameters from a string representation of a function call.
+ * Reduces an array of values to the sum of all numbers in the array.
  *
- * @template T - The type of the data object.
- * @param str - The string representation of the function call.
- * @param data - The data object used for resolving key arguments.
- * @param functions - The functions object used for resolving function arguments.
- * @returns An array of function parameters, including their values and types.
- * @example
+ * @param params - An array of values.
+ * @returns The sum of all numbers in the array.
  */
-export function getFunctionParameters<T extends Record<string, unknown>>(
-	str: string,
-	data: Record<string, unknown> = {},
-	functions?: Record<string, unknown>,
-): (
-	| {
-			val:
-				| string
-				| number
-				| boolean
-				| FunctionType<T>
-				| ((a: unknown) => boolean);
-			type: FuncParamType;
-	  }
-	| undefined
-)[] {
-	const ctx = data || {};
-	const fns = functions || {};
-	// Execute the regex to get the arguments from the string
-	const {
-		arg1,
-		arg1_val_str,
-		arg1_val_key,
-		arg1_val_fn,
-		arg1_val_num,
-		arg1_val_bool,
-		arg2,
-		arg2_val_str,
-		arg2_val_key,
-		arg2_val_fn,
-		arg2_val_num,
-		arg2_val_bool,
-	} = (DYN_ARG_REGEX.exec(str) || { groups: {} }).groups as Partial<{
-		arg1: string;
-		arg1_val_str: string;
-		arg1_val_key: string;
-		arg1_val_fn: string;
-		arg1_val_num: string;
-		arg1_val_bool: string;
-		arg2: string;
-		arg2_val_str: string;
-		arg2_val_key: string;
-		arg2_val_fn: string;
-		arg2_val_num: string;
-		arg2_val_bool: string;
-	}>;
+const reduceNumbers = (params: unknown[]): number =>
+	(params.filter((e) => typeof e === "number") as number[]).reduce(
+		(acc, cur) => acc + cur,
+		0,
+	);
 
-	const args: (
-		| {
-				val:
-					| string
-					| number
-					| boolean
-					| FunctionType<T>
-					| ((a: unknown) => boolean);
-				type: FuncParamType;
-		  }
-		| undefined
-	)[] = [];
+/**
+ * Checks if the number of parameters matches the specified limit.
+ *
+ * @param limit - The expected number of parameters.
+ * @param params - An array of parameters.
+ * @param val - The value to be checked.
+ * @returns A boolean indicating whether the number of parameters matches the limit and the value is truthy.
+ */
+const paramLimiter = (
+	limit: number,
+	params: unknown[],
+	val: unknown,
+): boolean => (params.length !== limit ? false : !!val);
 
-	if (arg1) {
-		const type = arg1.split(":")[0] as FuncParamType;
-		let arg: string | number | boolean | FunctionType<T> | undefined =
-			undefined;
+const handleLen = (opts: FuncArgsType, fn: FuncType) => {
+	const val_len = getLen(opts.value);
 
-		// handle the different types of arguments
-		if (type === "str" && arg1_val_str !== undefined) {
-			arg = arg1_val_str;
-		} else if (type === "key" && arg1_val_key !== undefined) {
-			arg = getNestedKeyValue(ctx, arg1_val_key as string) as
-				| string
-				| number
-				| boolean
-				| undefined;
-		} else if (type === "num" && arg1_val_num !== undefined) {
-			const tmp_num = arg1_val_num.includes(".")
-				? Number.parseFloat(arg1_val_num as string)
-				: Number.parseInt(arg1_val_num as string);
+	if (Number.isNaN(val_len)) return false;
+	return fn({ ...opts, value: val_len });
+};
 
-			// If the argument isn't a valid number, discard it
-			if (Number.isNaN(tmp_num)) {
-				arg = undefined;
-			} else {
-				arg = tmp_num;
-			}
-		} else if (type === "bool" && arg1_val_bool !== undefined) {
-			switch (arg1_val_bool) {
-				case "true":
-				case "1":
-					arg = true;
-					break;
-				case "false":
-				case "0":
-					arg = false;
-					break;
-				default:
-					arg = undefined;
-					break;
-			}
-		} else if (type === "fn" && arg1_val_fn !== undefined) {
-			arg = getNestedKeyValue(fns, arg1_val_fn as string) as FunctionType<T>;
-		}
-
-		args.push(arg !== undefined ? { val: arg, type } : undefined);
+const arrayify = (b: Any): Any[] => {
+	switch (true) {
+		case isArray(b):
+			return b;
+		case isString(b):
+			return b.split(" ");
+		case isObject(b):
+			return Object.keys(b);
+		case isMap(b):
+			return Array.from(b.keys());
+		default:
+			return [];
 	}
+};
 
-	// If the function requires a second (really third if you count
-	// the comparison passed in at the beginning of the dynamic
-	// replacer) argument, parse it from the provided ar2 variables
-	// from the regex
-	if (arg2) {
-		const type = arg2.split(":")[0] as FuncParamType;
-		let arg: string | number | boolean | FunctionType<T> | undefined =
-			undefined;
+/**
+ * Map of functions with their corresponding names and implementations.
+ * The key is the function name and the value is the function implementation.
+ */
+const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
+	["GT", ({ value: a, params }) => a > reduceNumbers(params)],
+	[
+		"GTE",
+		({ value: a, params }) => {
+			return a >= reduceNumbers(params);
+		},
+	],
+	[
+		"NGT",
+		(opts) => !(({ value: a, params }) => a > reduceNumbers(params))(opts),
+	],
+	[
+		"NGTE",
+		(opts) =>
+			!(({ value: a, params }) => {
+				return a >= reduceNumbers(params);
+			})(opts),
+	],
+	[
+		"LEN_GT",
+		(opts) =>
+			handleLen(opts, ({ value: a, params }) => a > reduceNumbers(params)),
+	],
+	[
+		"LEN_GTE",
+		(opts) =>
+			handleLen(opts, ({ value: a, params }) => {
+				return a >= reduceNumbers(params);
+			}),
+	],
+	[
+		"LEN_NGT",
+		(opts) =>
+			handleLen(
+				opts,
+				(opts) => !(({ value: a, params }) => a > reduceNumbers(params))(opts),
+			),
+	],
+	[
+		"LEN_NGTE",
+		(opts) =>
+			handleLen(
+				opts,
+				(opts) =>
+					!(({ value: a, params }) => {
+						return a >= reduceNumbers(params);
+					})(opts),
+			),
+	],
+	["LT", ({ value: a, params }) => a < reduceNumbers(params)],
+	[
+		"LTE",
+		({ value: a, params }) => {
+			return a <= reduceNumbers(params);
+		},
+	],
+	[
+		"NLT",
+		(opts) => !(({ value: a, params }) => a < reduceNumbers(params))(opts),
+	],
+	[
+		"NLTE",
+		(opts) =>
+			!(({ value: a, params }) => {
+				return a <= reduceNumbers(params);
+			})(opts),
+	],
+	[
+		"LEN_LT",
+		(opts) =>
+			handleLen(opts, ({ value: a, params }) => a < reduceNumbers(params)),
+	],
+	[
+		"LEN_LTE",
+		(opts) =>
+			handleLen(opts, ({ value: a, params }) => {
+				return a <= reduceNumbers(params);
+			}),
+	],
+	[
+		"LEN_NLT",
+		(opts) =>
+			handleLen(
+				opts,
+				(opts) => !(({ value: a, params }) => a < reduceNumbers(params))(opts),
+			),
+	],
+	[
+		"LEN_NLTE",
+		(opts) =>
+			handleLen(
+				opts,
+				(opts) =>
+					!(({ value: a, params }) => {
+						return a <= reduceNumbers(params);
+					})(opts),
+			),
+	],
+	["EQ", ({ value: a, params: [b] }) => a === b],
+	["NEQ", ({ value: a, params: [b] }) => a !== b],
+	["LEN_EQ", (opts) => handleLen(opts, ({ value: a, params: [b] }) => a === b)],
+	[
+		"LEN_NEQ",
+		(opts) => handleLen(opts, ({ value: a, params: [b] }) => a !== b),
+	],
+	[
+		"BT",
+		(opts) =>
+			paramLimiter(
+				2,
+				opts.params,
+				(({ value: a, params }) => a > reduceNumbers(params))({
+					...opts,
+					params: [opts.params[0]],
+				}) &&
+					(({ value: a, params }) => a < reduceNumbers(params))({
+						...opts,
+						params: [opts.params[1]],
+					}),
+			),
+	],
+	[
+		"NBT",
+		(opts) =>
+			!((opts) =>
+				paramLimiter(
+					2,
+					opts.params,
+					(({ value: a, params }) => a > reduceNumbers(params))({
+						...opts,
+						params: [opts.params[0]],
+					}) &&
+						(({ value: a, params }) => a < reduceNumbers(params))({
+							...opts,
+							params: [opts.params[1]],
+						}),
+				))(opts),
+	],
+	[
+		"LEN_BT",
+		(opts) =>
+			handleLen(opts, (opts) =>
+				paramLimiter(
+					2,
+					opts.params,
+					(({ value: a, params }) => a > reduceNumbers(params))({
+						...opts,
+						params: [opts.params[0]],
+					}) &&
+						(({ value: a, params }) => a < reduceNumbers(params))({
+							...opts,
+							params: [opts.params[1]],
+						}),
+				),
+			),
+	],
+	[
+		"LEN_NBT",
+		(opts) =>
+			handleLen(
+				opts,
+				(opts) =>
+					!((opts) =>
+						paramLimiter(
+							2,
+							opts.params,
+							(({ value: a, params }) => a > reduceNumbers(params))({
+								...opts,
+								params: [opts.params[0]],
+							}) &&
+								(({ value: a, params }) => a < reduceNumbers(params))({
+									...opts,
+									params: [opts.params[1]],
+								}),
+						))(opts),
+			),
+	],
+	["IN", ({ value: a, params: [b] }) => arrayify(b).includes(a)],
+	[
+		"NIN",
+		(opts) => {
+			return !(({ value: a, params: [b] }) => arrayify(b).includes(a))(opts);
+		},
+	],
+	[
+		"LEN_IN",
+		(opts) => {
+			return handleLen(opts, ({ value: a, params: [b] }) =>
+				arrayify(b).includes(a),
+			);
+		},
+	],
+	[
+		"LEN_NIN",
+		(opts) => {
+			return handleLen(
+				opts,
+				(opts) =>
+					!(({ value: a, params: [b] }) => arrayify(b).includes(a))(opts),
+			);
+		},
+	],
+	["AND", ({ value: a, params: [b] }) => !!a && !!b],
+	[
+		"OR",
+		({ value: a, params }) => {
+			if (a) return true;
 
-		// handle the different types of arguments
-		if (type === "str" && arg2_val_str !== undefined) {
-			arg = arg2_val_str;
-		} else if (type === "key" && arg2_val_key !== undefined) {
-			arg = getNestedKeyValue(ctx, arg2_val_key as string) as
-				| string
-				| number
-				| boolean
-				| undefined;
-		} else if (type === "num" && arg2_val_num !== undefined) {
-			arg = arg2_val_num.includes(".")
-				? Number.parseFloat(arg2_val_num as string)
-				: Number.parseInt(arg2_val_num as string);
-			// If the argument isn't a valid number, discard it
-			if (Number.isNaN(arg)) {
-				arg = undefined;
+			for (const p of params) {
+				if (p) return true;
 			}
-		} else if (type === "bool" && arg2_val_bool !== undefined) {
-			switch (arg2_val_bool) {
-				case "true":
-				case "1":
-					arg = true;
-					break;
-				case "false":
-				case "0":
-					arg = false;
-					break;
-				default:
-					arg = undefined;
-					break;
+
+			return false;
+		},
+	],
+	[
+		"XOR",
+		({ value: a, params }) => {
+			let has_truthy = !!a;
+
+			for (const p of params) {
+				const is_truthy = !!p;
+
+				if (has_truthy === is_truthy) {
+					return false;
+				}
+
+				if (!has_truthy && is_truthy) {
+					has_truthy = true;
+				}
 			}
-		} else if (type === "fn" && arg2_val_fn !== undefined) {
-			arg = getNestedKeyValue(fns, arg2_val_fn as string) as FunctionType<T>;
-		}
 
-		args.push(arg ? { val: arg, type } : undefined);
-	}
+			return has_truthy;
+		},
+	],
+	[
+		"CUSTOM",
+		(opts) => {
+			const filtered = opts.params.filter((p) => typeof p === "boolean");
+			if (filtered.length === 0) return false;
 
-	return args;
-}
+			// Make sure that all the functions are truthy, escaping early if not
+			for (const p of filtered) {
+				if (!p) return false;
+			}
+
+			return true;
+		},
+	],
+]);
+
+export { FUNCS, getLen };

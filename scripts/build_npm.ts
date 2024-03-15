@@ -1,5 +1,5 @@
 // ex. scripts/build_npm.ts
-import { build, emptyDir } from "https://deno.land/x/dnt@0.32.1/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.40.0/mod.ts";
 
 const DIR_NAME = "npm_build";
 
@@ -13,7 +13,7 @@ await build({
 		deno: true,
 	},
 	test: true,
-	declaration: true,
+	declaration: "inline",
 	package: {
 		// package.json properties
 		name: "@locale-kit/locale-kit",
