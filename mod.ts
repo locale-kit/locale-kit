@@ -168,7 +168,7 @@ class LocaleKit {
 		key: string,
 		opts?: T,
 		functions?: FuncObj,
-	) {
+	): string {
 		// Make sure the langauge is supported
 		const found = this.getKey(
 			(opts?.lang || this.fallback_language) as string,

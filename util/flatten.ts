@@ -146,7 +146,7 @@ export class Flattened {
 		circular: "c",
 		bigint: "bi",
 		null: "nu",
-	} as { [key in ValueType]: string };
+	};
 	/**
 	 * Mapping of key postfixes to their corresponding value types.
 	 */
@@ -161,7 +161,7 @@ export class Flattened {
 		c: "circular",
 		bi: "bigint",
 		nu: "null",
-	} as { [key: string]: ValueType };
+	};
 
 	private static utils = {
 		generateMap(data: Record<string, unknown>): Record<string, string> {
@@ -448,8 +448,12 @@ export class Flattened {
 
 			return {
 				key: decodeURIComponent(key),
-				value_type: Flattened.key_postfix_rev[value_type],
-				secondary_value_type: Flattened.key_postfix_rev[secondary_value_type],
+				value_type: Flattened.key_postfix_rev[
+					value_type as keyof typeof Flattened.key_postfix_rev
+				] as ValueType,
+				secondary_value_type: Flattened.key_postfix_rev[
+					secondary_value_type as keyof typeof Flattened.key_postfix_rev
+				] as ValueType,
 			};
 		},
 

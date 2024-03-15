@@ -6,13 +6,7 @@ import {
 	formStrictForms,
 	strictRegex,
 } from "../utils/common.ts";
-import {
-	arg,
-	asymetricBorderedPart,
-	noCapture,
-	optional,
-	orParts,
-} from "../utils/util.ts";
+import { arg, noCapture, optional, orParts } from "../utils/util.ts";
 
 /**
  * Regular expression pattern for matching the keywords "fn", "func", or "function".
