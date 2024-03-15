@@ -1,36 +1,28 @@
-import { _sep, makeRegex } from "../match/utils/common.ts";
+import { _sep, all_border_parts, makeRegex } from "../match/utils/common.ts";
 import {
-  arg,
-  asymetricBorderedPart,
-  borderedpart,
-  noCapture,
-  optional,
-  orParts,
+	arg,
+	asymetricBorderedPart,
+	noCapture,
+	optional,
+	orParts,
 } from "../match/utils/util.ts";
 
-const nc = noCapture;
+/**
+ * Represents the parameters for a function.
+ */
+const params = optional(asymetricBorderedPart(["(", ")"], true, "params"));
 
-// Pattern part for the function parameters
-const params = optional(
-  asymetricBorderedPart(["(", ")"], true, "params"),
-  // false,
-);
-
-// Pattern part for the case keys (.e.g. GT, LT, EQ, etc.)
+/**
+ * Regular expression pattern for matching case keys.
+ */
 const keys = arg("case_key", "[\\w\\d-]+?");
 
-// Pattern part for the content enclosed in quotes, backticks, pipes, square braces, or squiggly brackets
-const content_reg = arg(
-  "content",
-  ...orParts([
-    borderedpart('"'),
-    borderedpart("`"),
-    borderedpart("'"),
-    borderedpart("|"),
-    asymetricBorderedPart(["{", "}"]),
-    asymetricBorderedPart(["[", "]"]),
-  ]),
-);
+/**
+ * Regular expression for the content.
+ * Pattern part for the content enclosed in single quotes, double quotes, backticks,
+ * pipes, square braces, or squiggly brackets
+ */
+const content_reg = arg("content", ...orParts(all_border_parts));
 
 /**
  * Regular expression pattern used to match dynamic case keys in a specific format.
@@ -63,8 +55,8 @@ const content_reg = arg(
  * | LEN_CUSTOM       | CUSTOM            |
  */
 const DYN_CASEKEY_REGEX = makeRegex(
-  [nc(keys, params, _sep, content_reg)],
-  "gs",
+	[noCapture(keys, params, _sep, content_reg)],
+	"gs",
 );
 
 export { DYN_CASEKEY_REGEX };

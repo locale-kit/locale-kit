@@ -19,78 +19,78 @@ import type { FuncObj } from "../../types/fn.ts";
  * @returns An array of parsed values.
  */
 const parseParams = ({
-  param,
-  ctx,
-  fns,
-  value,
-  key_call_stack = [],
-  max_call_stack = 20,
+	param,
+	ctx,
+	fns,
+	value,
+	key_call_stack = [],
+	max_call_stack = 20,
 }: {
-  param: string;
-  ctx: Record<string, unknown>;
-  fns: FuncObj;
-  value?: unknown;
-  key_call_stack?: string[];
-  max_call_stack?: number;
+	param: string;
+	ctx: Record<string, unknown>;
+	fns: FuncObj;
+	value?: unknown;
+	key_call_stack?: string[];
+	max_call_stack?: number;
 }): Any[] => {
-  const out: Any[] = [];
-  const params = getArgTypes(param);
-  for (let i = 0; i < params.length; i++) {
-    const [t, v] = params[i];
+	const out: Any[] = [];
+	const params = getArgTypes(param);
+	for (let i = 0; i < params.length; i++) {
+		const [t, v] = params[i];
 
-    switch (t) {
-      case "str":
-        out.push(parseStr(v));
-        break;
-      case "key": {
-        if (v.startsWith("p")) {
-          const parsed = parseKey({
-            str: v,
-            ctx,
-            fns,
-            value,
-            key_call_stack,
-            max_call_stack,
-            parse_val: true,
-          });
+		switch (t) {
+			case "str":
+				out.push(parseStr(v));
+				break;
+			case "key": {
+				if (v.startsWith("p")) {
+					const parsed = parseKey({
+						str: v,
+						ctx,
+						fns,
+						value,
+						key_call_stack,
+						max_call_stack,
+						parse_val: true,
+					});
 
-          if (Array.isArray(parsed)) {
-            out.push(...parsed);
-          } else {
-            out.push(parsed);
-          }
-        } else {
-          out.push(
-            parseKey({
-              str: v,
-              ctx,
-              fns,
-              value,
-              key_call_stack,
-              max_call_stack,
-            }),
-          );
-        }
-        break;
-      }
-      case "bool":
-        out.push(parseBool(v));
-        break;
-      case "num":
-        out.push(parseNum(v));
-        break;
-      case "fun":
-        out.push(
-          parseFn({ str: v, ctx, fns, value, key_call_stack, max_call_stack }),
-        );
-        break;
-      case "empty":
-        out.push(undefined);
-        break;
-    }
-  }
+					if (Array.isArray(parsed)) {
+						out.push(...parsed);
+					} else {
+						out.push(parsed);
+					}
+				} else {
+					out.push(
+						parseKey({
+							str: v,
+							ctx,
+							fns,
+							value,
+							key_call_stack,
+							max_call_stack,
+						}),
+					);
+				}
+				break;
+			}
+			case "bool":
+				out.push(parseBool(v));
+				break;
+			case "num":
+				out.push(parseNum(v));
+				break;
+			case "fun":
+				out.push(
+					parseFn({ str: v, ctx, fns, value, key_call_stack, max_call_stack }),
+				);
+				break;
+			case "empty":
+				out.push(undefined);
+				break;
+		}
+	}
 
-  return out.flat(1);
+	return out.flat(1);
 };
 
 export { parseParams };

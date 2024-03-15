@@ -1,7 +1,7 @@
 const esc = (char: string) =>
-  char === "|" || char === "[" || char === "]" || char === "(" || char === ")"
-    ? `\\${char}`
-    : char;
+	char === "|" || char === "[" || char === "]" || char === "(" || char === ")"
+		? `\\${char}`
+		: char;
 
 /**
  * Creates a regular expression pattern that matches any of the provided parts.
@@ -10,16 +10,16 @@ const esc = (char: string) =>
  * @returns A regular expression pattern that matches any of the provided parts.
  */
 const orParts = (parts: string[], bordered = true) => {
-  const out = ["(?:"];
-  const len = parts.length - 1;
-  parts.reduce((acc, part, i) => {
-    acc.push(bordered ? noCapture(part) : part);
-    if (i !== len) acc.push("|");
-    return acc;
-  }, out);
-  out.push(")");
+	const out = ["(?:"];
+	const len = parts.length - 1;
+	parts.reduce((acc, part, i) => {
+		acc.push(bordered ? noCapture(part) : part);
+		if (i !== len) acc.push("|");
+		return acc;
+	}, out);
+	out.push(")");
 
-  return out;
+	return out;
 };
 
 /**
@@ -30,7 +30,7 @@ const orParts = (parts: string[], bordered = true) => {
  * @returns A regular expression pattern with a named group.
  */
 const arg = (key: string, ...parts: string[]) =>
-  `(?<${key}>(?:${parts.join("")}))`;
+	`(?<${key}>(?:${parts.join("")}))`;
 
 /**
  * Creates a non-capturing group regular expression pattern.
@@ -60,19 +60,19 @@ const noIncludeAfter = (str: string) => `(?=${str})`;
  * @returns The generated regular expression pattern.
  */
 const asymetricBorderedPart = (
-  [open, close]: [string, string],
-  is_arg = false,
-  key = "arg",
-  include_border = true,
+	[open, close]: [string, string],
+	is_arg = false,
+	key = "arg",
+	include_border = true,
 ) => {
-  const open_esc = esc(open);
-  const close_esc = open === close ? open_esc : esc(close);
+	const open_esc = esc(open);
+	const close_esc = open === close ? open_esc : esc(close);
 
-  const border_start = include_border ? open_esc : noIncludeBefore(open_esc);
-  const border_end = include_border ? close_esc : noIncludeAfter(close_esc);
-  const inner = [...orParts([`[^${close_esc}\\\\]`, "\\\\."]), "*"].join("");
+	const border_start = include_border ? open_esc : noIncludeBefore(open_esc);
+	const border_end = include_border ? close_esc : noIncludeAfter(close_esc);
+	const inner = [...orParts([`[^${close_esc}\\\\]`, "\\\\."]), "*"].join("");
 
-  return `${border_start}${is_arg ? arg(key, inner) : inner}${border_end}`;
+	return `${border_start}${is_arg ? arg(key, inner) : inner}${border_end}`;
 };
 
 /**
@@ -84,12 +84,12 @@ const asymetricBorderedPart = (
  * @returns The part of the string surrounded by the border.
  */
 const borderedpart = (
-  border: string,
-  arg = false,
-  key = "arg",
-  include_border = true,
+	border: string,
+	arg = false,
+	key = "arg",
+	include_border = true,
 ) => {
-  return asymetricBorderedPart([border, border], arg, key, include_border);
+	return asymetricBorderedPart([border, border], arg, key, include_border);
 };
 
 /**
@@ -100,11 +100,11 @@ const borderedpart = (
  * @returns The optional string pattern.
  */
 const optional = (str: string, wrapped = true) => {
-  if (wrapped) {
-    return `${noCapture(str)}?`;
-  }
+	if (wrapped) {
+		return `${noCapture(str)}?`;
+	}
 
-  return `${str}?`;
+	return `${str}?`;
 };
 
 /**
@@ -115,9 +115,9 @@ const optional = (str: string, wrapped = true) => {
  * @throws {Error} If the maximum call stack limit has been reached.
  */
 const handleCallStack = (key_call_stack: string[], max_call_stack: number) => {
-  if (key_call_stack.length >= max_call_stack) {
-    throw new Error(`Max call stack reached at ${key_call_stack.join(" -> ")}`);
-  }
+	if (key_call_stack.length >= max_call_stack) {
+		throw new Error(`Max call stack reached at ${key_call_stack.join(" -> ")}`);
+	}
 };
 
 /**
@@ -127,28 +127,26 @@ const handleCallStack = (key_call_stack: string[], max_call_stack: number) => {
  * @throws {Error} If a circular reference is detected.
  */
 const handleCircularRef = (key_call_stack: string[], key: string) => {
-  if (key_call_stack.includes(key)) {
-    throw new Error(
-      `Circular reference detected in key "${key}" at ${
-        key_call_stack.join(
-          " -> ",
-        )
-      }`,
-    );
-  }
+	if (key_call_stack.includes(key)) {
+		throw new Error(
+			`Circular reference detected in key "${key}" at ${key_call_stack.join(
+				" -> ",
+			)}`,
+		);
+	}
 
-  // Otherwise, add the call to the stack
-  key_call_stack.push(key);
+	// Otherwise, add the call to the stack
+	key_call_stack.push(key);
 };
 
 export {
-  arg,
-  asymetricBorderedPart,
-  borderedpart,
-  capture,
-  handleCallStack,
-  handleCircularRef,
-  noCapture,
-  optional,
-  orParts,
+	arg,
+	asymetricBorderedPart,
+	borderedpart,
+	capture,
+	handleCallStack,
+	handleCircularRef,
+	noCapture,
+	optional,
+	orParts,
 };
