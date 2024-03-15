@@ -1,4 +1,7 @@
 {
+  "name": "@locale-kit/locale-kit",
+  "version": "2.0.1",
+  "exports": "./mod.ts",
   "fmt": {
     "exclude": [
       "README.md",
@@ -28,7 +31,7 @@
   },
   "bench": {
     "include": [
-      "test/"
+      "bench/"
     ],
     "exclude": [
       "npm_build/"
