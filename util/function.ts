@@ -26,7 +26,7 @@ const addNumbers = (params: unknown[]): number =>
 const arrayify = (b: Any): Any[] => {
 	switch (true) {
 		case isArray(b):
-			return b;
+			return b.flat(1);
 		case isString(b):
 			return b.split(" ");
 		case isObject(b):
@@ -69,7 +69,7 @@ const FN_BTE: FuncType<Any, Any[]> = ({ value: a, params: p }) =>
 const FN_NBT: FuncType<Any, Any[]> = (opts) => !FN_BT(opts);
 const FN_NBTE: FuncType<Any, Any[]> = (opts) => !FN_BTE(opts);
 // Contained in
-const FN_IN: FuncType<Any, Any[]> = ({ value: a, params: [b] }) =>
+const FN_IN: FuncType<Any, Any[]> = ({ value: a, params: b }) =>
 	arrayify(b).includes(a);
 const FN_NIN: FuncType<Any, Any[]> = (opts) => !FN_IN(opts);
 // All truthy
