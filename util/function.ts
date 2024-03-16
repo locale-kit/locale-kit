@@ -1,7 +1,7 @@
 import type { Any } from "../types/any.ts";
 import type { FuncArgsType, FuncType } from "../types/fn.ts";
 import { getLen } from "./getLen.ts";
-import { isArray, isMap, isObject, isString } from "./is.ts";
+import { isArray, isMap, isObject, isString, isTruthy } from "./is.ts";
 
 export const MAXSAFEINT = BigInt(Number.MAX_SAFE_INTEGER);
 
@@ -11,7 +11,7 @@ export const MAXSAFEINT = BigInt(Number.MAX_SAFE_INTEGER);
  * @param params - An array of values.
  * @returns The sum of all numbers in the array.
  */
-const reduceNumbers = (params: unknown[]): number =>
+const addNumbers = (params: unknown[]): number =>
 	(params.filter((e) => typeof e === "number") as number[]).reduce(
 		(acc, cur) => acc + cur,
 		0,
@@ -29,7 +29,7 @@ const paramLimiter = (
 	limit: number,
 	params: unknown[],
 	val: unknown,
-): boolean => (params.length !== limit ? false : !!val);
+): boolean => (params.length !== limit ? false : isTruthy(val));
 
 const handleLen = (opts: FuncArgsType, fn: FuncType) => {
 	const val_len = getLen(opts.value);
@@ -58,34 +58,30 @@ const arrayify = (b: Any): Any[] => {
  * The key is the function name and the value is the function implementation.
  */
 const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
-	["GT", ({ value: a, params }) => a > reduceNumbers(params)],
+	["GT", ({ value: a, params }) => a > addNumbers(params)],
 	[
 		"GTE",
 		({ value: a, params }) => {
-			return a >= reduceNumbers(params);
+			return a >= addNumbers(params);
 		},
 	],
-	[
-		"NGT",
-		(opts) => !(({ value: a, params }) => a > reduceNumbers(params))(opts),
-	],
+	["NGT", (opts) => !(({ value: a, params }) => a > addNumbers(params))(opts)],
 	[
 		"NGTE",
 		(opts) =>
 			!(({ value: a, params }) => {
-				return a >= reduceNumbers(params);
+				return a >= addNumbers(params);
 			})(opts),
 	],
 	[
 		"LEN_GT",
-		(opts) =>
-			handleLen(opts, ({ value: a, params }) => a > reduceNumbers(params)),
+		(opts) => handleLen(opts, ({ value: a, params }) => a > addNumbers(params)),
 	],
 	[
 		"LEN_GTE",
 		(opts) =>
 			handleLen(opts, ({ value: a, params }) => {
-				return a >= reduceNumbers(params);
+				return a >= addNumbers(params);
 			}),
 	],
 	[
@@ -93,7 +89,7 @@ const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
 		(opts) =>
 			handleLen(
 				opts,
-				(opts) => !(({ value: a, params }) => a > reduceNumbers(params))(opts),
+				(opts) => !(({ value: a, params }) => a > addNumbers(params))(opts),
 			),
 	],
 	[
@@ -103,38 +99,34 @@ const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
 				opts,
 				(opts) =>
 					!(({ value: a, params }) => {
-						return a >= reduceNumbers(params);
+						return a >= addNumbers(params);
 					})(opts),
 			),
 	],
-	["LT", ({ value: a, params }) => a < reduceNumbers(params)],
+	["LT", ({ value: a, params }) => a < addNumbers(params)],
 	[
 		"LTE",
 		({ value: a, params }) => {
-			return a <= reduceNumbers(params);
+			return a <= addNumbers(params);
 		},
 	],
-	[
-		"NLT",
-		(opts) => !(({ value: a, params }) => a < reduceNumbers(params))(opts),
-	],
+	["NLT", (opts) => !(({ value: a, params }) => a < addNumbers(params))(opts)],
 	[
 		"NLTE",
 		(opts) =>
 			!(({ value: a, params }) => {
-				return a <= reduceNumbers(params);
+				return a <= addNumbers(params);
 			})(opts),
 	],
 	[
 		"LEN_LT",
-		(opts) =>
-			handleLen(opts, ({ value: a, params }) => a < reduceNumbers(params)),
+		(opts) => handleLen(opts, ({ value: a, params }) => a < addNumbers(params)),
 	],
 	[
 		"LEN_LTE",
 		(opts) =>
 			handleLen(opts, ({ value: a, params }) => {
-				return a <= reduceNumbers(params);
+				return a <= addNumbers(params);
 			}),
 	],
 	[
@@ -142,7 +134,7 @@ const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
 		(opts) =>
 			handleLen(
 				opts,
-				(opts) => !(({ value: a, params }) => a < reduceNumbers(params))(opts),
+				(opts) => !(({ value: a, params }) => a < addNumbers(params))(opts),
 			),
 	],
 	[
@@ -152,7 +144,7 @@ const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
 				opts,
 				(opts) =>
 					!(({ value: a, params }) => {
-						return a <= reduceNumbers(params);
+						return a <= addNumbers(params);
 					})(opts),
 			),
 	],
@@ -165,53 +157,19 @@ const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
 	],
 	[
 		"BT",
-		(opts) =>
-			paramLimiter(
-				2,
-				opts.params,
-				(({ value: a, params }) => a > reduceNumbers(params))({
-					...opts,
-					params: [opts.params[0]],
-				}) &&
-					(({ value: a, params }) => a < reduceNumbers(params))({
-						...opts,
-						params: [opts.params[1]],
-					}),
-			),
+		({ value, params }) =>
+			paramLimiter(2, params, value > params[0] && value < params[1]),
 	],
 	[
 		"NBT",
-		(opts) =>
-			!((opts) =>
-				paramLimiter(
-					2,
-					opts.params,
-					(({ value: a, params }) => a > reduceNumbers(params))({
-						...opts,
-						params: [opts.params[0]],
-					}) &&
-						(({ value: a, params }) => a < reduceNumbers(params))({
-							...opts,
-							params: [opts.params[1]],
-						}),
-				))(opts),
+		({ value, params }) =>
+			!paramLimiter(2, params, value > params[0] && value < params[1]),
 	],
 	[
 		"LEN_BT",
 		(opts) =>
-			handleLen(opts, (opts) =>
-				paramLimiter(
-					2,
-					opts.params,
-					(({ value: a, params }) => a > reduceNumbers(params))({
-						...opts,
-						params: [opts.params[0]],
-					}) &&
-						(({ value: a, params }) => a < reduceNumbers(params))({
-							...opts,
-							params: [opts.params[1]],
-						}),
-				),
+			handleLen(opts, ({ params, value }) =>
+				paramLimiter(2, params, value > params[0] && value < params[1]),
 			),
 	],
 	[
@@ -219,29 +177,12 @@ const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
 		(opts) =>
 			handleLen(
 				opts,
-				(opts) =>
-					!((opts) =>
-						paramLimiter(
-							2,
-							opts.params,
-							(({ value: a, params }) => a > reduceNumbers(params))({
-								...opts,
-								params: [opts.params[0]],
-							}) &&
-								(({ value: a, params }) => a < reduceNumbers(params))({
-									...opts,
-									params: [opts.params[1]],
-								}),
-						))(opts),
+				({ params, value }) =>
+					!paramLimiter(2, params, value > params[0] && value < params[1]),
 			),
 	],
 	["IN", ({ value: a, params: [b] }) => arrayify(b).includes(a)],
-	[
-		"NIN",
-		(opts) => {
-			return !(({ value: a, params: [b] }) => arrayify(b).includes(a))(opts);
-		},
-	],
+	["NIN", ({ value: a, params: [b] }) => !arrayify(b).includes(a)],
 	[
 		"LEN_IN",
 		(opts) => {
@@ -255,31 +196,33 @@ const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
 		(opts) => {
 			return handleLen(
 				opts,
-				(opts) =>
-					!(({ value: a, params: [b] }) => arrayify(b).includes(a))(opts),
+				({ value: a, params: [b] }) => !arrayify(b).includes(a),
 			);
 		},
 	],
-	["AND", ({ value: a, params: [b] }) => !!a && !!b],
+	[
+		"AND",
+		({ value: a, params: p }) => {
+			if (!isTruthy(a)) return false;
+
+			return p.every(isTruthy);
+		},
+	],
 	[
 		"OR",
 		({ value: a, params }) => {
-			if (a) return true;
+			if (isTruthy(a)) return true;
 
-			for (const p of params) {
-				if (p) return true;
-			}
-
-			return false;
+			return params.some(isTruthy);
 		},
 	],
 	[
 		"XOR",
 		({ value: a, params }) => {
-			let has_truthy = !!a;
+			let has_truthy = isTruthy(a);
 
 			for (const p of params) {
-				const is_truthy = !!p;
+				const is_truthy = isTruthy(p);
 
 				if (has_truthy === is_truthy) {
 					return false;
@@ -296,15 +239,11 @@ const FUNCS: Map<string, FuncType<Any, Any[]>> = new Map([
 	[
 		"CUSTOM",
 		(opts) => {
-			const filtered = opts.params.filter((p) => typeof p === "boolean");
-			if (filtered.length === 0) return false;
+			// const filtered = opts.params.filter((p) => typeof p === "boolean");
+			if (opts.params.length === 0) return false;
 
-			// Make sure that all the functions are truthy, escaping early if not
-			for (const p of filtered) {
-				if (!p) return false;
-			}
-
-			return true;
+			// Make sure that all the values are truthy
+			return opts.params.every(isTruthy);
 		},
 	],
 ]);
