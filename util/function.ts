@@ -18,20 +18,6 @@ const addNumbers = (params: unknown[]): number =>
 	);
 
 /**
- * Checks if the number of parameters matches the specified limit.
- *
- * @param limit - The expected number of parameters.
- * @param params - An array of parameters.
- * @param val - The value to be checked.
- * @returns A boolean indicating whether the number of parameters matches the limit and the value is truthy.
- */
-const paramLimiter = (
-	limit: number,
-	params: unknown[],
-	val: unknown,
-): boolean => (params.length !== limit ? false : isTruthy(val));
-
-/**
  * Converts the input value to an array based on its type.
  *
  * @param b - The input value to be converted to an array.
@@ -77,9 +63,9 @@ const FN_EQ: FuncType<Any, Any[]> = ({ value: a, params: [b] }) => a === b;
 const FN_NEQ: FuncType<Any, Any[]> = ({ value: a, params: [b] }) => a !== b;
 // Between
 const FN_BT: FuncType<Any, Any[]> = ({ value: a, params: p }) =>
-	paramLimiter(2, p, a > p[0] && a < p[1]);
+	a > p[0] && a < p[1];
 const FN_BTE: FuncType<Any, Any[]> = ({ value: a, params: p }) =>
-	paramLimiter(2, p, a >= p[0] && a <= p[1]);
+	a >= p[0] && a <= p[1];
 const FN_NBT: FuncType<Any, Any[]> = (opts) => !FN_BT(opts);
 const FN_NBTE: FuncType<Any, Any[]> = (opts) => !FN_BTE(opts);
 // Contained in
