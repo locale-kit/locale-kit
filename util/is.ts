@@ -1,3 +1,5 @@
+import type { Any } from "../types/any.ts";
+
 /**
  * Checks if a value is a string.
  *
@@ -73,6 +75,42 @@ const isMap = (value: unknown): boolean =>
  */
 const isFunction = (value: unknown): boolean => typeof value === "function";
 
+/**
+ * Checks if a value is truthy.
+ *
+ * The following conditions are truthy:
+ * - A string with a length greater than 0.
+ * - An array with a length greater than 0.
+ * - An object with at least one key.
+ * - A Map with at least one key.
+ * - A number greater than 0.
+ * - A BigInt greater than 0n.
+ * - A boolean with a value of `true`.
+ *
+ * @param value - The value to check.
+ * @returns `true` if the value is truthy, `false` otherwise.
+ */
+const isTruthy = (value: unknown): boolean => {
+	switch (true) {
+		case isString(value):
+			return (value as string).length > 0;
+		case isArray(value):
+			return (value as Array<Any>).length > 0;
+		case isObject(value):
+			return Object.keys(value as object).length > 0;
+		case isMap(value):
+			return (value as Map<string, Any>).size > 0;
+		case isNumber(value):
+			return (value as number) > 0;
+		case isBigInt(value):
+			return (value as bigint) > 0n;
+		case isBoolean(value):
+			return value as boolean;
+		default:
+			return false;
+	}
+};
+
 export {
 	isArray,
 	isBigInt,
@@ -84,4 +122,5 @@ export {
 	isObject,
 	isString,
 	isUndefined,
+	isTruthy,
 };
