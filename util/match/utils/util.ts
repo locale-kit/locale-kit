@@ -1,3 +1,5 @@
+import { _s } from "./common.ts";
+
 const esc = (char: string) =>
 	char === "|" || char === "[" || char === "]" || char === "(" || char === ")"
 		? `\\${char}`
@@ -72,7 +74,9 @@ const asymetricBorderedPart = (
 	const border_end = include_border ? close_esc : noIncludeAfter(close_esc);
 	const inner = [...orParts([`[^${close_esc}\\\\]`, "\\\\."]), "*"].join("");
 
-	return `${border_start}${is_arg ? arg(key, inner) : inner}${border_end}`;
+	return `${border_start}${_s}${
+		is_arg ? arg(key, inner) : inner
+	}${_s}${border_end}`;
 };
 
 /**

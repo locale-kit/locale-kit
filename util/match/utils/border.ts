@@ -70,7 +70,7 @@ function unescapeStringBorder(source: string, border: string): string {
 		// Otherwise if we don't have an escape, continue to the next character
 	}
 
-	return output;
+	return output.trim();
 }
 
 /**

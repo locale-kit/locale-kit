@@ -52,7 +52,9 @@ const parseFn = ({
 	const matched = param_str.match(strict_form_args);
 	if (!matched?.groups?.key) return undefined;
 
-	const key = matched.groups.key.substring(1, matched.groups.key.length - 1);
+	const key = matched.groups.key
+		.substring(1, matched.groups.key.length - 1)
+		.trim();
 	const params = matched.groups.arg?.trim() || undefined;
 
 	// Handle circular references
