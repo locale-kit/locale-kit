@@ -196,5 +196,5 @@ class LocaleKit {
 	}
 }
 
-export { LocaleKit, format as parseString };
+export { LocaleKit, format as parseString, format };
 export type { FuncArgsType, FuncObj, FuncType };
