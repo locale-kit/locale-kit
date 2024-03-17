@@ -1,6 +1,6 @@
 {
   "name": "@locale-kit/locale-kit",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "exports": "./mod.ts",
   "fmt": {
     "exclude": [
